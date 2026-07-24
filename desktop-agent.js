@@ -625,8 +625,17 @@ async function main() {
 
   // Il Wake-on-LAN richiede il MAC address: se manca (config vecchia o
   // scoperta automatica, che non lo rileva) proviamo a ricavarlo dalla
-  // tabella ARP, ora che abbiamo gia' scambiato pacchetti con la TV.
+  // tabella ARP. Se la TV era gia' autenticata (cookie/psk presenti) non
+  // abbiamo ancora scambiato pacchetti in questa sessione: facciamo un
+  // probe HTTP leggero solo per "scaldare" la cache ARP del sistema.
   if (tv && !tv.mac) {
+    if (tv.cookie || tv.psk) {
+      try {
+        await fetch(`http://${tv.ip}/sony/system`, { signal: AbortSignal.timeout(1500) });
+      } catch {
+        // ignorato: basta il tentativo di connessione per popolare l'ARP
+      }
+    }
     const mac = await getMacFromArp(tv.ip);
     if (mac) {
       tv.mac = mac;
