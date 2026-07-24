@@ -44,17 +44,14 @@
   }
 
   :root {
-    --bg: #15100b;
-    --bg-2: #221b13;
-    --bg-3: #2c2318;
-    --line: #f3e9d7;
-    --muted: #ab9c87;
-    --red: #ff5b3d;
-    --red-soft: #ff9a7c;
-    --amber: #f2b054;
-    --olive: #8a9a5b;
-    --cream: #f3e9d7;
-    --border: rgba(243, 233, 215, 0.18);
+    --bg: #faf6ec;
+    --bg-2: #ffffff;
+    --bg-3: #f0e9d8;
+    --line: #1e1712;
+    --muted: #6e6255;
+    --red: #cf4128;
+    --red-soft: #a3341f;
+    --border: rgba(30, 23, 18, 0.15);
 
     --font-slab: 'Slab', 'Georgia', serif;
     --font-hand: 'Hand', cursive;
@@ -73,13 +70,13 @@
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     background-image:
-      radial-gradient(circle at 1px 1px, rgba(243,233,215,0.05) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, rgba(30,23,18,0.06) 1px, transparent 0);
     background-size: 22px 22px;
   }
   img { max-width: 100%; display: block; }
   a { color: inherit; }
   .page-frame {
-    border: 2px dashed rgba(243, 233, 215, 0.25);
+    border: 2px dashed rgba(30, 23, 18, 0.22);
     margin: 10px;
     min-height: calc(100vh - 20px);
   }
@@ -104,11 +101,9 @@
     box-shadow: 5px 5px 0 var(--line);
     white-space: nowrap;
   }
-  .tile--ink { background: var(--bg-3); color: var(--line); }
-  .tile--cream { background: var(--cream); color: var(--bg); }
-  .tile--red { background: var(--red); color: var(--bg); }
-  .tile--olive { background: var(--olive); color: var(--bg); }
-  .tile--amber { background: var(--amber); color: var(--bg); }
+  .tile--ink { background: var(--line); color: var(--bg-2); }
+  .tile--cream { background: var(--bg-2); color: var(--line); }
+  .tile--red { background: var(--red); color: var(--bg-2); }
   .r1 { transform: rotate(-2.2deg); }
   .r2 { transform: rotate(1.6deg); }
   .r3 { transform: rotate(-1deg); }
@@ -133,8 +128,8 @@
     text-transform: uppercase;
     font-size: 19px;
     letter-spacing: 0.02em;
-    background: var(--bg-3);
-    color: var(--line);
+    background: var(--line);
+    color: var(--bg-2);
     padding: 6px 12px 8px;
     border: 3px solid var(--line);
     box-shadow: 4px 4px 0 var(--red);
@@ -193,7 +188,7 @@
 
   .diary-tag { font-family: var(--font-hand); color: var(--red-soft); font-size: 15px; margin: 28px 0 6px; }
   .diary-text { font-family: var(--font-hand); font-size: 21px; line-height: 1.5; max-width: 52ch; color: var(--muted); }
-  .diary-text a { color: var(--amber); text-decoration: underline; }
+  .diary-text a { color: var(--red-soft); text-decoration: underline; }
 
   .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 30px 0 14px; }
   .btn-sticker {
@@ -225,7 +220,7 @@
     font-family: var(--font-hand);
     font-weight: 700;
     font-size: 19px;
-    color: var(--amber);
+    color: var(--red-soft);
     text-decoration: underline wavy;
     text-decoration-thickness: 1.5px;
   }
@@ -255,8 +250,8 @@
     transform: translateX(-50%) rotate(-3deg);
     width: 90px;
     height: 30px;
-    background: rgba(242, 176, 84, 0.35);
-    border: 1px solid rgba(243,233,215,0.25);
+    background: rgba(207, 65, 40, 0.18);
+    border: 1px solid rgba(30,23,18,0.2);
   }
   .phone-mock {
     background: var(--bg);
@@ -270,7 +265,7 @@
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--amber);
+    color: var(--red-soft);
     text-align: center;
     margin-bottom: 12px;
   }
@@ -307,7 +302,7 @@
     box-shadow: 3px 3px 0 var(--line);
   }
   .sticker-badge.rec { top: -18px; right: 6px; transform: rotate(8deg); color: var(--red-soft); }
-  .sticker-badge.signal { bottom: 6px; left: -20px; transform: rotate(-10deg); background: var(--olive); color: var(--bg); }
+  .sticker-badge.signal { bottom: 6px; left: -20px; transform: rotate(-10deg); background: var(--line); color: var(--bg-2); }
 
   /* --- SECTION HEADS --- */
   .section-head { max-width: 640px; margin-bottom: 44px; }
@@ -341,7 +336,7 @@
     background: var(--bg-2);
     border: 2.5px solid var(--line);
     padding: 26px 24px;
-    box-shadow: 6px 6px 0 var(--olive);
+    box-shadow: 6px 6px 0 var(--red);
   }
   .step:not(:last-child)::after {
     content: "→";
@@ -431,7 +426,7 @@
   .faq p { color: var(--muted); font-size: 15.5px; margin: 12px 0 0; max-width: 62ch; }
 
   /* --- FOOTER --- */
-  footer { border-top: 2px dashed rgba(243,233,215,0.25); padding: 44px 0; }
+  footer { border-top: 2px dashed rgba(30,23,18,0.22); padding: 44px 0; }
   .footer-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; flex-wrap: wrap; }
   .footer-links { display: flex; gap: 24px; flex-wrap: wrap; font-size: 14px; font-weight: 600; }
   .footer-links a { text-decoration: none; color: var(--muted); }
@@ -456,8 +451,8 @@
     left: -35px;
     top: -60px;
   }
-  .ribbon.olive { background: var(--olive); transform: rotate(11deg); opacity: 0.9; }
-  .ribbon.amber { background: var(--amber); transform: rotate(11deg) translate(46px, 10px); width: 46px; opacity: 0.85; }
+  .ribbon.main { background: var(--line); transform: rotate(11deg); opacity: 0.92; }
+  .ribbon.accent { background: var(--red); transform: rotate(11deg) translate(46px, 10px); width: 46px; opacity: 0.9; }
   .clip {
     position: absolute;
     top: 96px;
@@ -473,9 +468,9 @@
 <div class="page-frame">
 
   <div class="corner-decor">
-    <div class="ribbon olive"></div>
-    <div class="ribbon amber"></div>
-    <svg class="clip" viewBox="0 0 24 48" fill="none" stroke="#f3e9d7" stroke-width="2.4" stroke-linecap="round">
+    <div class="ribbon main"></div>
+    <div class="ribbon accent"></div>
+    <svg class="clip" viewBox="0 0 24 48" fill="none" stroke="#1e1712" stroke-width="2.4" stroke-linecap="round">
       <path d="M17 4 L17 34 A6 6 0 0 1 5 34 L5 14 A3.5 3.5 0 0 1 12 14 L12 30" />
     </svg>
   </div>
@@ -508,10 +503,10 @@
         </div>
         <div class="letters">
           <span class="tile tile--red r2">P</span>
-          <span class="tile tile--olive r5">E</span>
-          <span class="tile tile--ink r1">R</span>
-          <span class="tile tile--amber r4">D</span>
-          <span class="tile tile--cream r3">I</span>
+          <span class="tile tile--ink r5">E</span>
+          <span class="tile tile--cream r1">R</span>
+          <span class="tile tile--ink r4">D</span>
+          <span class="tile tile--red r3">I</span>
           <span class="headline-tail">(mai più)</span>
         </div>
       </div>
