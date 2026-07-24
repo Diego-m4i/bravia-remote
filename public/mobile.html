@@ -506,6 +506,18 @@
       ws.send(JSON.stringify({ type: 'join', code }));
     }
 
+    // Se la pagina viene aperta con ?code=123456 (es. dall'app desktop),
+    // compila e collega automaticamente, senza bisogno di digitarlo.
+    const autoCode = new URLSearchParams(location.search).get('code');
+    if (autoCode && /^\d{6}$/.test(autoCode)) {
+      document.getElementById('codeInput').value = autoCode;
+      if (ws.readyState === WebSocket.OPEN) {
+        joinRoom();
+      } else {
+        ws.addEventListener('open', () => joinRoom(), { once: true });
+      }
+    }
+
     function sendCommand(cmd) {
       ws.send(JSON.stringify({ type: 'command', cmd }));
     }

@@ -8,6 +8,10 @@ const PORT = process.env.PORT || 3000;
 // room_code -> { desktop: ws|null, mobile: ws|null }
 const rooms = new Map();
 
+// Ultimo codice di pairing creato: usato dall'app desktop (Electron) per
+// aprire il telecomando gia' collegato, senza doverlo digitare a mano.
+let lastCode = null;
+
 function generateCode() {
   let code;
   do {
@@ -30,6 +34,12 @@ function send(ws, obj) {
 const mobileHtml = fs.readFileSync(path.join(__dirname, 'public/mobile.html'));
 
 const server = http.createServer((req, res) => {
+  if (req.url === '/pairing-code') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ code: lastCode }));
+    return;
+  }
+
   let body;
   if (req.url === '/' || req.url === '/mobile.html') {
     body = mobileHtml;
@@ -63,6 +73,7 @@ wss.on('connection', (ws) => {
       rooms.set(code, { desktop: ws, mobile: null });
       ws.roomCode = code;
       ws.role = 'desktop';
+      lastCode = code;
       send(ws, { type: 'created', code });
       return;
     }

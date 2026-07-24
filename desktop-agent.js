@@ -283,6 +283,19 @@ async function setupTv() {
     }
   }
 
+  if (!process.stdin.isTTY) {
+    // Nessun terminale disponibile per chiedere input (es. app desktop/Electron).
+    if (devices.length > 0) {
+      const cfg = { ip: devices[0].ip, psk: '', friendlyName: devices[0].friendlyName };
+      saveTvConfig(cfg);
+      console.log(`Nessun terminale disponibile: seleziono automaticamente ${cfg.friendlyName} (${cfg.ip}).`);
+      return cfg;
+    }
+    console.log('Nessuna TV trovata automaticamente e nessun terminale disponibile per inserirla a mano.');
+    console.log('Crea/modifica tv-config.json accanto all\'app (vedi tv-config.example.json) con l\'IP della TV, poi riavvia.');
+    return null;
+  }
+
   if (devices.length === 0) {
     console.log('Nessun dispositivo trovato con nessuno dei due metodi.');
     const ip = await ask('Inserisci manualmente l\'IP della TV: ');
