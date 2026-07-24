@@ -56,6 +56,7 @@ async function createWindow() {
     title: 'Bravia Remote',
     autoHideMenuBar: true,
     backgroundColor: '#0f0f11',
+    icon: path.join(__dirname, 'assets/icon.png'),
   });
   win.loadURL(url);
 }
