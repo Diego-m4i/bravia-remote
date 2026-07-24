@@ -1,5 +1,5 @@
 {
-  "name": "bravia-remote-app",
+  "name": "pairbeam",
   "version": "1.0.0",
   "private": true,
   "description": "App desktop unica per il telecomando Sony Bravia: avvia relay e agent e apre subito il telecomando.",
@@ -20,8 +20,8 @@
     "rcedit": "^5.0.2"
   },
   "build": {
-    "appId": "com.diegomarinangeli.braviaremote",
-    "productName": "Bravia Remote",
+    "appId": "com.diegomarinangeli.pairbeam",
+    "productName": "PairBeam",
     "files": [
       "main.js",
       "build/**/*",
@@ -31,7 +31,7 @@
     "directories": {
       "output": "dist-electron"
     },
-    "artifactName": "BraviaRemote-Setup.exe",
+    "artifactName": "PairBeam-Setup.exe",
     "afterPack": "./scripts/after-pack.js",
     "win": {
       "target": "nsis",

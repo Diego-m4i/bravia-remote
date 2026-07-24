@@ -53,7 +53,7 @@ async function createWindow() {
     height: 840,
     minWidth: 380,
     minHeight: 600,
-    title: 'Bravia Remote',
+    title: 'PairBeam',
     autoHideMenuBar: true,
     backgroundColor: '#0f0f11',
     icon: path.join(__dirname, 'assets/icon.png'),

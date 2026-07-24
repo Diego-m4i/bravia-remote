@@ -44,17 +44,17 @@
   }
 
   :root {
-    --paper: #eee3cd;
-    --paper-2: #f7f0e0;
-    --ink: #201810;
-    --ink-soft: #4a3f34;
-    --muted: #7a6d5c;
-    --red: #cf4128;
-    --red-deep: #a4331f;
-    --navy: #223252;
-    --amber: #e2a13c;
-    --cream: #faf5e8;
-    --border: rgba(32, 24, 16, 0.16);
+    --bg: #15100b;
+    --bg-2: #221b13;
+    --bg-3: #2c2318;
+    --line: #f3e9d7;
+    --muted: #ab9c87;
+    --red: #ff5b3d;
+    --red-soft: #ff9a7c;
+    --amber: #f2b054;
+    --olive: #8a9a5b;
+    --cream: #f3e9d7;
+    --border: rgba(243, 233, 215, 0.18);
 
     --font-slab: 'Slab', 'Georgia', serif;
     --font-hand: 'Hand', cursive;
@@ -66,20 +66,20 @@
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--bg);
+    color: var(--line);
     font-family: var(--font-body);
     font-size: 17px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     background-image:
-      radial-gradient(circle at 1px 1px, rgba(32,24,16,0.06) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, rgba(243,233,215,0.05) 1px, transparent 0);
     background-size: 22px 22px;
   }
   img { max-width: 100%; display: block; }
   a { color: inherit; }
   .page-frame {
-    border: 2px dashed rgba(32, 24, 16, 0.28);
+    border: 2px dashed rgba(243, 233, 215, 0.25);
     margin: 10px;
     min-height: calc(100vh - 20px);
   }
@@ -100,15 +100,15 @@
     font-weight: 900;
     text-transform: uppercase;
     padding: 0.06em 0.22em 0.1em;
-    border: 3px solid var(--ink);
-    box-shadow: 5px 5px 0 var(--ink);
+    border: 3px solid var(--line);
+    box-shadow: 5px 5px 0 var(--line);
     white-space: nowrap;
   }
-  .tile--ink { background: var(--ink); color: var(--cream); }
-  .tile--cream { background: var(--cream); color: var(--ink); }
-  .tile--red { background: var(--red); color: var(--cream); }
-  .tile--navy { background: var(--navy); color: var(--cream); }
-  .tile--amber { background: var(--amber); color: var(--ink); }
+  .tile--ink { background: var(--bg-3); color: var(--line); }
+  .tile--cream { background: var(--cream); color: var(--bg); }
+  .tile--red { background: var(--red); color: var(--bg); }
+  .tile--olive { background: var(--olive); color: var(--bg); }
+  .tile--amber { background: var(--amber); color: var(--bg); }
   .r1 { transform: rotate(-2.2deg); }
   .r2 { transform: rotate(1.6deg); }
   .r3 { transform: rotate(-1deg); }
@@ -133,25 +133,26 @@
     text-transform: uppercase;
     font-size: 19px;
     letter-spacing: 0.02em;
-    background: var(--ink);
-    color: var(--cream);
+    background: var(--bg-3);
+    color: var(--line);
     padding: 6px 12px 8px;
-    border: 3px solid var(--ink);
+    border: 3px solid var(--line);
     box-shadow: 4px 4px 0 var(--red);
     transform: rotate(-2deg);
   }
   .nav-links { display: flex; gap: 26px; font-size: 15px; font-weight: 600; }
-  .nav-links a { text-decoration: none; color: var(--ink-soft); }
-  .nav-links a:hover { color: var(--ink); text-decoration: underline wavy; }
+  .nav-links a { text-decoration: none; color: var(--muted); }
+  .nav-links a:hover { color: var(--line); text-decoration: underline wavy; }
   .nav-cta {
     font-family: var(--font-body);
     font-weight: 700;
     font-size: 14px;
     padding: 8px 16px;
-    border: 2.5px solid var(--ink);
-    background: var(--cream);
+    border: 2.5px solid var(--line);
+    background: var(--red);
+    color: var(--bg);
     text-decoration: none;
-    box-shadow: 3px 3px 0 var(--ink);
+    box-shadow: 3px 3px 0 var(--line);
   }
   @media (max-width: 760px) { .nav-links { display: none; } }
 
@@ -166,12 +167,11 @@
     font-weight: 600;
     letter-spacing: 0.03em;
     padding: 7px 14px;
-    border: 2px solid var(--ink);
-    background: var(--paper-2);
+    border: 2px solid var(--line);
+    background: var(--bg-2);
     margin-bottom: 26px;
   }
 
-  .headline { font-size: clamp(15px, 0px, 0px); } /* reset, sizes set on tiles */
   .headline-line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-bottom: 14px; }
   .headline .tile { font-size: clamp(22px, 3.6vw, 34px); }
   .headline-plain {
@@ -179,21 +179,21 @@
     font-weight: 900;
     text-transform: uppercase;
     font-size: clamp(22px, 3.6vw, 34px);
-    color: var(--ink);
+    color: var(--line);
   }
   .letters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
   .letters .tile { font-size: clamp(30px, 6vw, 56px); padding: 0.05em 0.18em 0.12em; min-width: 0.9em; justify-content: center; }
   .headline-tail {
     font-family: var(--font-hand);
     font-weight: 700;
-    color: var(--red-deep);
+    color: var(--red-soft);
     font-size: clamp(22px, 3.4vw, 30px);
     margin-left: 6px;
   }
 
-  .diary-tag { font-family: var(--font-hand); color: var(--red-deep); font-size: 15px; margin: 28px 0 6px; }
-  .diary-text { font-family: var(--font-hand); font-size: 21px; line-height: 1.5; max-width: 52ch; color: var(--ink-soft); }
-  .diary-text a { color: var(--navy); text-decoration: underline; }
+  .diary-tag { font-family: var(--font-hand); color: var(--red-soft); font-size: 15px; margin: 28px 0 6px; }
+  .diary-text { font-family: var(--font-hand); font-size: 21px; line-height: 1.5; max-width: 52ch; color: var(--muted); }
+  .diary-text a { color: var(--amber); text-decoration: underline; }
 
   .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 30px 0 14px; }
   .btn-sticker {
@@ -201,38 +201,38 @@
     font-weight: 700;
     font-size: 16px;
     padding: 14px 22px;
-    border: 3px solid var(--ink);
+    border: 3px solid var(--line);
     background: var(--red);
-    color: var(--cream);
+    color: var(--bg);
     text-decoration: none;
-    box-shadow: 5px 5px 0 var(--ink);
+    box-shadow: 5px 5px 0 var(--line);
     display: inline-flex;
     align-items: center;
     gap: 8px;
     transition: transform 0.08s ease, box-shadow 0.08s ease;
   }
-  .btn-sticker:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--ink); }
+  .btn-sticker:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--line); }
   .fact-pill {
     font-family: var(--font-mono);
     font-size: 12.5px;
     font-weight: 600;
     padding: 9px 14px;
-    border: 2px solid var(--ink);
-    background: var(--cream);
+    border: 2px solid var(--line);
+    background: var(--bg-2);
     border-radius: 999px;
   }
   .link-hand {
     font-family: var(--font-hand);
     font-weight: 700;
     font-size: 19px;
-    color: var(--navy);
+    color: var(--amber);
     text-decoration: underline wavy;
     text-decoration-thickness: 1.5px;
   }
   .fine-print { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; }
   .fine-print .filetag {
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--line);
+    color: var(--bg);
     padding: 2px 8px;
     display: inline-block;
   }
@@ -240,10 +240,10 @@
   /* --- POLAROID --- */
   .polaroid-wrap { position: relative; padding-top: 20px; }
   .polaroid {
-    background: var(--cream);
-    border: 2px solid var(--ink);
+    background: var(--bg-2);
+    border: 2px solid var(--line);
     padding: 14px 14px 44px;
-    box-shadow: 8px 10px 0 rgba(32,24,16,0.18);
+    box-shadow: 8px 10px 0 rgba(0,0,0,0.5);
     transform: rotate(2.4deg);
     max-width: 340px;
     margin: 0 auto;
@@ -255,14 +255,15 @@
     transform: translateX(-50%) rotate(-3deg);
     width: 90px;
     height: 30px;
-    background: rgba(226, 161, 60, 0.55);
-    border: 1px solid rgba(32,24,16,0.15);
+    background: rgba(242, 176, 84, 0.35);
+    border: 1px solid rgba(243,233,215,0.25);
   }
   .phone-mock {
-    background: var(--ink);
+    background: var(--bg);
     border-radius: 22px;
     padding: 16px;
-    color: var(--paper);
+    color: var(--line);
+    border: 1px solid var(--border);
   }
   .phone-mock .pm-head {
     font-family: var(--font-mono);
@@ -275,7 +276,7 @@
   }
   .pm-code { text-align: center; font-family: var(--font-mono); font-weight: 600; font-size: 22px; letter-spacing: 0.14em; margin-bottom: 14px; }
   .pm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .pm-btn { background: #33291d; border-radius: 8px; height: 26px; }
+  .pm-btn { background: var(--bg-3); border-radius: 8px; height: 26px; }
   .pm-btn.wide { grid-column: span 3; background: var(--red); }
   .polaroid-caption {
     position: absolute;
@@ -285,7 +286,7 @@
     text-align: center;
     font-family: var(--font-hand);
     font-size: 15px;
-    color: var(--ink-soft);
+    color: var(--muted);
   }
   .sticker-badge {
     position: absolute;
@@ -293,8 +294,8 @@
     font-weight: 700;
     font-size: 11px;
     text-transform: uppercase;
-    background: var(--cream);
-    border: 2px solid var(--ink);
+    background: var(--bg-2);
+    border: 2px solid var(--line);
     border-radius: 50%;
     width: 68px;
     height: 68px;
@@ -303,14 +304,10 @@
     justify-content: center;
     text-align: center;
     line-height: 1.2;
-    box-shadow: 3px 3px 0 var(--ink);
+    box-shadow: 3px 3px 0 var(--line);
   }
-  .sticker-badge.rec { top: -18px; right: 6px; transform: rotate(8deg); color: var(--red); }
-  .sticker-badge.rec::before {
-    content: "";
-    display: none;
-  }
-  .sticker-badge.signal { bottom: 6px; left: -20px; transform: rotate(-10deg); background: var(--navy); color: var(--cream); }
+  .sticker-badge.rec { top: -18px; right: 6px; transform: rotate(8deg); color: var(--red-soft); }
+  .sticker-badge.signal { bottom: 6px; left: -20px; transform: rotate(-10deg); background: var(--olive); color: var(--bg); }
 
   /* --- SECTION HEADS --- */
   .section-head { max-width: 640px; margin-bottom: 44px; }
@@ -320,42 +317,67 @@
     text-transform: uppercase;
     font-size: clamp(26px, 3.6vw, 36px);
   }
-  .section-head p { color: var(--ink-soft); font-size: 16.5px; margin-top: 12px; }
+  .section-head p { color: var(--muted); font-size: 16.5px; margin-top: 12px; }
 
   /* --- FEATURES --- */
   .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
   @media (max-width: 860px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
   .feature {
-    background: var(--paper-2);
-    border: 2.5px solid var(--ink);
+    background: var(--bg-2);
+    border: 2.5px solid var(--line);
     padding: 22px;
-    box-shadow: 5px 5px 0 rgba(32,24,16,0.15);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
   }
-  .feature svg { width: 24px; height: 24px; color: var(--red-deep); margin-bottom: 14px; }
-  .feature h3 { font-family: var(--font-body); font-weight: 700; font-size: 16.5px; }
-  .feature p { color: var(--ink-soft); font-size: 15px; margin: 8px 0 0; }
+  .feature svg { width: 24px; height: 24px; color: var(--red-soft); margin-bottom: 14px; }
+  .feature h3 { font-family: var(--font-body); font-weight: 700; font-size: 16.5px; color: var(--line); }
+  .feature p { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
 
-  /* --- STEPS --- */
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-  @media (max-width: 780px) { .steps { grid-template-columns: 1fr; gap: 36px; } }
-  .step .num {
-    font-family: var(--font-hand);
-    font-weight: 700;
-    font-size: 34px;
-    color: var(--red-deep);
-    display: block;
-    margin-bottom: 6px;
+  /* --- STEPS (riquadri) --- */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; }
+  @media (max-width: 780px) { .steps { grid-template-columns: 1fr; gap: 30px; } }
+  .step {
+    position: relative;
+    background: var(--bg-2);
+    border: 2.5px solid var(--line);
+    padding: 26px 24px;
+    box-shadow: 6px 6px 0 var(--olive);
   }
-  .step h3 { font-family: var(--font-body); font-weight: 700; font-size: 17.5px; margin-bottom: 6px; }
-  .step p { color: var(--ink-soft); font-size: 15px; margin: 0; }
+  .step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    top: 50%;
+    right: -30px;
+    transform: translateY(-50%);
+    font-family: var(--font-slab);
+    font-weight: 900;
+    font-size: 24px;
+    color: var(--red);
+  }
+  @media (max-width: 780px) { .step:not(:last-child)::after { display: none; } }
+  .step .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--red);
+    color: var(--bg);
+    font-family: var(--font-slab);
+    font-weight: 900;
+    font-size: 16px;
+    border: 2px solid var(--line);
+    margin-bottom: 16px;
+  }
+  .step h3 { font-family: var(--font-body); font-weight: 700; font-size: 17.5px; margin-bottom: 8px; color: var(--line); }
+  .step p { color: var(--muted); font-size: 15px; margin: 0; }
 
   /* --- DOWNLOAD --- */
   .download-card {
-    background: var(--paper-2);
-    border: 3px solid var(--ink);
+    background: var(--bg-2);
+    border: 3px solid var(--line);
     padding: 46px;
-    box-shadow: 8px 8px 0 var(--ink);
+    box-shadow: 8px 8px 0 var(--red);
     display: grid;
     grid-template-columns: 1.2fr auto;
     gap: 30px;
@@ -363,7 +385,7 @@
   }
   @media (max-width: 780px) { .download-card { grid-template-columns: 1fr; padding: 30px; } }
   .download-card h2 { font-family: var(--font-slab); font-weight: 900; text-transform: uppercase; font-size: clamp(24px, 3.2vw, 32px); }
-  .download-card p { color: var(--ink-soft); margin: 12px 0 0; max-width: 46ch; }
+  .download-card p { color: var(--muted); margin: 12px 0 0; max-width: 46ch; }
   .download-actions { display: flex; flex-direction: column; gap: 10px; }
   .download-actions .btn-sticker { justify-content: center; }
   .download-alt { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-align: center; }
@@ -373,13 +395,13 @@
     display: flex;
     gap: 12px;
     padding: 16px 18px;
-    border: 2px dashed var(--ink);
-    background: var(--cream);
+    border: 2px dashed var(--line);
+    background: var(--bg-2);
     font-size: 14px;
-    color: var(--ink-soft);
+    color: var(--muted);
   }
-  .warn-note svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--red-deep); margin-top: 1px; }
-  .warn-note strong { color: var(--ink); }
+  .warn-note svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--red-soft); margin-top: 1px; }
+  .warn-note strong { color: var(--line); }
 
   /* --- FAQ --- */
   .faq { max-width: 760px; }
@@ -393,6 +415,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 16px;
+    color: var(--line);
   }
   .faq summary::-webkit-details-marker { display: none; }
   .faq summary::after {
@@ -400,19 +423,19 @@
     font-family: var(--font-slab);
     font-weight: 900;
     font-size: 22px;
-    color: var(--red-deep);
+    color: var(--red-soft);
     flex-shrink: 0;
   }
   .faq details[open] summary::after { content: "–"; }
   .faq summary:focus-visible { outline: 2px solid var(--red); outline-offset: 4px; }
-  .faq p { color: var(--ink-soft); font-size: 15.5px; margin: 12px 0 0; max-width: 62ch; }
+  .faq p { color: var(--muted); font-size: 15.5px; margin: 12px 0 0; max-width: 62ch; }
 
   /* --- FOOTER --- */
-  footer { border-top: 2px dashed rgba(32,24,16,0.28); padding: 44px 0; }
+  footer { border-top: 2px dashed rgba(243,233,215,0.25); padding: 44px 0; }
   .footer-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; flex-wrap: wrap; }
   .footer-links { display: flex; gap: 24px; flex-wrap: wrap; font-size: 14px; font-weight: 600; }
-  .footer-links a { text-decoration: none; color: var(--ink-soft); }
-  .footer-links a:hover { text-decoration: underline; }
+  .footer-links a { text-decoration: none; color: var(--muted); }
+  .footer-links a:hover { text-decoration: underline; color: var(--line); }
   .footer-legal { margin-top: 24px; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); max-width: 75ch; line-height: 1.7; }
 
   /* --- DECOR: corner ribbon --- */
@@ -433,7 +456,7 @@
     left: -35px;
     top: -60px;
   }
-  .ribbon.navy { background: var(--navy); transform: rotate(11deg); opacity: 0.9; }
+  .ribbon.olive { background: var(--olive); transform: rotate(11deg); opacity: 0.9; }
   .ribbon.amber { background: var(--amber); transform: rotate(11deg) translate(46px, 10px); width: 46px; opacity: 0.85; }
   .clip {
     position: absolute;
@@ -450,9 +473,9 @@
 <div class="page-frame">
 
   <div class="corner-decor">
-    <div class="ribbon navy"></div>
+    <div class="ribbon olive"></div>
     <div class="ribbon amber"></div>
-    <svg class="clip" viewBox="0 0 24 48" fill="none" stroke="#201810" stroke-width="2.4" stroke-linecap="round">
+    <svg class="clip" viewBox="0 0 24 48" fill="none" stroke="#f3e9d7" stroke-width="2.4" stroke-linecap="round">
       <path d="M17 4 L17 34 A6 6 0 0 1 5 34 L5 14 A3.5 3.5 0 0 1 12 14 L12 30" />
     </svg>
   </div>
@@ -469,7 +492,7 @@
           <a href="#faq">FAQ</a>
           <a href="https://github.com/diegomarinangeli/bravia-remote">GitHub</a>
         </div>
-        <a class="nav-cta" href="https://github.com/diegomarinangeli/bravia-remote/releases/latest/download/BraviaRemote-Setup.exe">Scarica</a>
+        <a class="nav-cta" href="https://github.com/diegomarinangeli/bravia-remote/releases/latest/download/PairBeam-Setup.exe">Scarica</a>
       </div>
     </nav>
   </div>
@@ -485,7 +508,7 @@
         </div>
         <div class="letters">
           <span class="tile tile--red r2">P</span>
-          <span class="tile tile--navy r5">E</span>
+          <span class="tile tile--olive r5">E</span>
           <span class="tile tile--ink r1">R</span>
           <span class="tile tile--amber r4">D</span>
           <span class="tile tile--cream r3">I</span>
@@ -493,18 +516,18 @@
         </div>
       </div>
 
-      <div class="diary-tag script">— dal diario, ore piccole</div>
-      <p class="diary-text script">Finalmente ho fatto pace col telecomando sparito nel divano. Un codice a 6 cifre, dal telefono, e via: TV accesa, volume su, canale cambiato. Niente cloud, niente app da installare. Gratis per sempre, open source. Adoro.</p>
+      <div class="diary-tag script">— dal divano, ore piccole</div>
+      <p class="diary-text script">Finalmente ho fatto pace col telecomando sparito nel divano. Dal PC e via: TV accesa, volume su, canale cambiato. Niente codici, niente cloud, gratis per sempre, open source. Adoro.</p>
 
       <div class="cta-row">
-        <a class="btn-sticker" href="https://github.com/diegomarinangeli/bravia-remote/releases/latest/download/BraviaRemote-Setup.exe">
+        <a class="btn-sticker" href="https://github.com/diegomarinangeli/bravia-remote/releases/latest/download/PairBeam-Setup.exe">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
           Scarica per Windows
         </a>
         <span class="fact-pill">🔓 nessun diritto di amministratore</span>
         <a class="link-hand script" href="https://github.com/diegomarinangeli/bravia-remote">guarda su GitHub →</a>
       </div>
-      <div class="fine-print">Gratuito e open source · installer ~79 MB · prendi <span class="filetag">BraviaRemote-Setup.exe</span></div>
+      <div class="fine-print">Gratuito e open source · installer ~79 MB · prendi <span class="filetag">PairBeam-Setup.exe</span></div>
     </div>
 
     <div class="polaroid-wrap">
@@ -572,17 +595,17 @@
     </div>
     <div class="steps">
       <div class="step">
-        <span class="num script">uno</span>
+        <span class="num">1</span>
         <h3>Installa PairBeam</h3>
         <p>Sul PC collegato alla TV. Al primo avvio cerca la TV in rete da solo.</p>
       </div>
       <div class="step">
-        <span class="num script">due</span>
+        <span class="num">2</span>
         <h3>Apri il telecomando</h3>
         <p>Sul telefono, dalla stessa rete WiFi, e inserisci il codice mostrato dall'app.</p>
       </div>
       <div class="step">
-        <span class="num script">tre</span>
+        <span class="num">3</span>
         <h3>Comanda dal divano</h3>
         <p>Accensione, volume, canali, navigazione: tutto risponde in tempo reale.</p>
       </div>
@@ -596,7 +619,7 @@
         <p>Scarica l'installer, seguilo, apri il telecomando. Nessuna dipendenza da installare a parte.</p>
       </div>
       <div class="download-actions">
-        <a class="btn-sticker" href="https://github.com/diegomarinangeli/bravia-remote/releases/latest/download/BraviaRemote-Setup.exe">
+        <a class="btn-sticker" href="https://github.com/diegomarinangeli/bravia-remote/releases/latest/download/PairBeam-Setup.exe">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
           Scarica per Windows
         </a>
