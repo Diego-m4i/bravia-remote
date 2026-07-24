@@ -203,16 +203,26 @@ function ask(question) {
 }
 
 /* --- Scansione diretta della sottorete --- */
-function getLocalSubnetBase() {
+// Un PC puo' avere piu' reti attive insieme (VPN, VMware/VirtualBox,
+// Hyper-V, hotspot...): usare solo la prima trovata rischia di scansionare
+// la rete sbagliata e non trovare mai la TV. Proviamo tutte le sottoreti
+// reali, mettendo per ultime quelle che sembrano di macchine virtuali/VPN.
+function getLocalSubnetBases() {
   const ifaces = os.networkInterfaces();
+  const virtualPattern = /virtual|vmware|virtualbox|hyper-v|vpn|tun|tailscale|zerotier|docker|wsl/i;
+  const real = [];
+  const virtual = [];
+
   for (const name of Object.keys(ifaces)) {
     for (const iface of ifaces[name]) {
       if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address.split('.').slice(0, 3).join('.');
+        const base = iface.address.split('.').slice(0, 3).join('.');
+        const target = virtualPattern.test(name) ? virtual : real;
+        if (!target.includes(base)) target.push(base);
       }
     }
   }
-  return null;
+  return [...real, ...virtual];
 }
 
 async function probeBravia(ip) {
@@ -223,12 +233,20 @@ async function probeBravia(ip) {
       body: JSON.stringify({ method: 'getPowerStatus', id: 1, params: [], version: '1.0' }),
       signal: AbortSignal.timeout(500),
     });
-    const text = await res.text();
-    if (text.includes('"result"') || text.includes('"error"')) {
+    const data = await res.json();
+    // La risposta Sony ha una forma precisa: result e' un array il cui primo
+    // elemento ha un campo "status", oppure error e' [codiceNumerico, messaggio].
+    // Un semplice "contiene la parola error" e' troppo permissivo: qualsiasi
+    // router/gateway con una web UI JSON lo farebbe scattare (falso positivo
+    // osservato in pratica su un adattatore di rete virtuale locale).
+    if (Array.isArray(data.result) && data.result[0] && typeof data.result[0].status === 'string') {
+      return { ip };
+    }
+    if (Array.isArray(data.error) && typeof data.error[0] === 'number') {
       return { ip };
     }
   } catch {
-    // ignorato
+    // ignorato: non JSON, o non risponde
   }
   return null;
 }
@@ -276,30 +294,43 @@ async function setupTv() {
     return saved;
   }
 
+  if (!process.stdin.isTTY) {
+    // Nessun terminale disponibile per chiedere input (es. app desktop/Electron):
+    // la scansione automatica (SSDP/sottorete) dipende troppo da quale rete e'
+    // attiva sul PC in quel momento (VPN, macchine virtuali...) per essere
+    // affidabile qui. Restituiamo null: la UI (vedi main.js) chiede l'IP
+    // direttamente all'utente e lo salva, senza bisogno di indovinarlo.
+    console.log('Nessun terminale disponibile: in attesa che l\'IP della TV venga inserito dalla UI.');
+    return null;
+  }
+
   console.log('Scansione dispositivi sulla rete locale (SSDP) in corso...\n');
   let devices = await ssdpDiscover();
 
-  if (devices.length === 0) {
-    console.log('SSDP non ha trovato nulla. Provo una scansione diretta della sottorete...');
-    const base = getLocalSubnetBase();
-    if (base) {
-      const found = await subnetScan(base, (n) => process.stdout.write(`\rProbing ${base}.${n}...  `));
-      process.stdout.write('\r' + ' '.repeat(40) + '\r');
-      devices = found.map((f) => ({ ip: f.ip, friendlyName: 'Sony Bravia (rilevato via API)', manufacturer: '', modelName: '' }));
-    }
+  if (devices.length > 0) {
+    // SSDP si fida del nome annunciato dal dispositivo, che puo' provenire da
+    // un'interfaccia di rete non raggiungibile per i comandi reali (visto in
+    // pratica: una TV raggiungibile via SSDP a un IP che poi non risponde
+    // all'API Sony). Teniamo solo i candidati che rispondono davvero.
+    console.log('Verifico quali dispositivi rispondono davvero all\'API Sony...');
+    const checks = await Promise.all(devices.map((d) => probeBravia(d.ip)));
+    devices = devices.filter((_, i) => checks[i]);
   }
 
-  if (!process.stdin.isTTY) {
-    // Nessun terminale disponibile per chiedere input (es. app desktop/Electron).
-    if (devices.length > 0) {
-      const cfg = { ip: devices[0].ip, psk: '', friendlyName: devices[0].friendlyName };
-      saveTvConfig(cfg);
-      console.log(`Nessun terminale disponibile: seleziono automaticamente ${cfg.friendlyName} (${cfg.ip}).`);
-      return cfg;
+  if (devices.length === 0) {
+    console.log('SSDP non ha trovato nulla di verificabile. Provo una scansione diretta della sottorete...');
+    const bases = getLocalSubnetBases();
+    if (bases.length > 1) {
+      console.log(`Rilevate ${bases.length} reti attive sul PC, le provo una alla volta: ${bases.join(', ')}`);
     }
-    console.log('Nessuna TV trovata automaticamente e nessun terminale disponibile per inserirla a mano.');
-    console.log('Crea/modifica tv-config.json accanto all\'app (vedi tv-config.example.json) con l\'IP della TV, poi riavvia.');
-    return null;
+    for (const base of bases) {
+      const found = await subnetScan(base, (n) => process.stdout.write(`\rProbing ${base}.${n}...  `));
+      process.stdout.write('\r' + ' '.repeat(40) + '\r');
+      if (found.length > 0) {
+        devices = found.map((f) => ({ ip: f.ip, friendlyName: 'Sony Bravia (rilevato via API)', manufacturer: '', modelName: '' }));
+        break;
+      }
+    }
   }
 
   if (devices.length === 0) {
@@ -354,9 +385,48 @@ async function actRegister(ip, pin) {
     headers['Authorization'] = 'Basic ' + Buffer.from(':' + pin).toString('base64');
   }
 
-  const res = await fetch(`http://${ip}/sony/accessControl`, { method: 'POST', headers, body });
-  const setCookie = res.headers.get('set-cookie');
-  return { status: res.status, cookie: setCookie ? setCookie.split(';')[0] : null };
+  try {
+    const res = await fetch(`http://${ip}/sony/accessControl`, {
+      method: 'POST',
+      headers,
+      body,
+      signal: AbortSignal.timeout(5000),
+    });
+    const setCookie = res.headers.get('set-cookie');
+    return { status: res.status, cookie: setCookie ? setCookie.split(';')[0] : null };
+  } catch (err) {
+    // TV spenta/irraggiungibile: nessuna eccezione non gestita, solo un
+    // "nessuna risposta" che il chiamante sa interpretare.
+    return { status: 0, cookie: null, error: err.message };
+  }
+}
+
+// Attende che il PIN venga inserito dalla UI (public/setup.html) quando non
+// c'e' un terminale disponibile per chiederlo con readline. Comunicazione
+// tramite global.PAIRBEAM: stesso processo Node di server.js dentro Electron.
+function waitForPinFromUi(timeoutMs = 180000, intervalMs = 500) {
+  global.PAIRBEAM = global.PAIRBEAM || { pinNeeded: false, pinValue: null };
+  global.PAIRBEAM.pinNeeded = true;
+  global.PAIRBEAM.pinValue = null;
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve) => {
+    function check() {
+      if (global.PAIRBEAM.pinValue) {
+        const pin = global.PAIRBEAM.pinValue;
+        global.PAIRBEAM.pinNeeded = false;
+        global.PAIRBEAM.pinValue = null;
+        resolve(pin);
+        return;
+      }
+      if (Date.now() < deadline) {
+        setTimeout(check, intervalMs);
+      } else {
+        global.PAIRBEAM.pinNeeded = false;
+        resolve('');
+      }
+    }
+    check();
+  });
 }
 
 async function authenticateWithTv(ip) {
@@ -369,7 +439,13 @@ async function authenticateWithTv(ip) {
 
   if (result.status === 401 || result.status === 403) {
     console.log('\nControlla lo schermo della TV: dovrebbe essere comparso un codice PIN.');
-    const pin = await ask('Inserisci il PIN mostrato sulla TV: ');
+    const pin = process.stdin.isTTY
+      ? await ask('Inserisci il PIN mostrato sulla TV: ')
+      : await waitForPinFromUi();
+    if (!pin) {
+      console.log('Nessun PIN ricevuto in tempo utile.');
+      return null;
+    }
     result = await actRegister(ip, pin.trim());
     if (result.status === 200 && result.cookie) {
       console.log('Registrazione completata.\n');

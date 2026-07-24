@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PairBeam - Configurazione</title>
+<style>
+  :root {
+    --bg-color: #0f0f11;
+    --card-bg: #202024;
+    --btn-bg: #2e2e34;
+    --btn-text: #ffffff;
+    --accent-red: #e53935;
+    --text-muted: #aaaaaa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
+    color: var(--btn-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 32px 28px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+  }
+  h1 { font-size: 18px; margin: 0 0 8px; }
+  p { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0 0 22px; }
+  input {
+    font-size: 20px;
+    text-align: center;
+    letter-spacing: 1px;
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #3a3a42;
+    background: var(--btn-bg);
+    color: #fff;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    outline: none;
+  }
+  button {
+    font-size: 15px;
+    font-weight: bold;
+    padding: 13px 30px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent-red);
+    color: white;
+    cursor: pointer;
+    width: 100%;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #status { margin-top: 16px; font-size: 13px; color: var(--text-muted); min-height: 18px; }
+  #errorMsg { color: #ff6b6b; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div id="ipStep">
+      <h1>Configura la TV</h1>
+      <p>Inserisci l'indirizzo IP della tua TV Sony Bravia. Lo trovi nelle impostazioni di rete della TV. Serve solo la prima volta.</p>
+      <input id="ipInput" type="text" inputmode="decimal" placeholder="192.168.1.2" autofocus>
+      <button id="ipSubmit">Continua</button>
+      <div id="status"></div>
+    </div>
+
+    <div id="pinStep" class="hidden">
+      <h1>Autorizza PairBeam</h1>
+      <p>Controlla lo schermo della TV: dovrebbe essere comparso un codice PIN. Inseriscilo qui sotto.</p>
+      <input id="pinInput" type="text" inputmode="numeric" placeholder="0000">
+      <button id="pinSubmit">Conferma</button>
+      <div id="pinStatus"></div>
+    </div>
+
+    <div id="waitStep" class="hidden">
+      <h1>Connessione in corso...</h1>
+      <p>Un attimo, sto collegando l'app alla TV.</p>
+    </div>
+  </div>
+
+  <script>
+    const ipStep = document.getElementById('ipStep');
+    const pinStep = document.getElementById('pinStep');
+    const waitStep = document.getElementById('waitStep');
+    const statusEl = document.getElementById('status');
+    const pinStatusEl = document.getElementById('pinStatus');
+
+    document.getElementById('ipSubmit').addEventListener('click', async () => {
+      const ip = document.getElementById('ipInput').value.trim();
+      if (!ip) return;
+      statusEl.textContent = 'Salvataggio...';
+      statusEl.classList.remove('error');
+      try {
+        const res = await fetch('/tv-setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip }),
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          statusEl.textContent = data.error || 'Errore, riprova.';
+          statusEl.id = 'errorMsg';
+          return;
+        }
+        ipStep.classList.add('hidden');
+        waitStep.classList.remove('hidden');
+        pollForPin();
+      } catch (err) {
+        statusEl.textContent = 'Impossibile salvare, riprova.';
+      }
+    });
+
+    document.getElementById('pinSubmit').addEventListener('click', async () => {
+      const pin = document.getElementById('pinInput').value.trim();
+      if (!pin) return;
+      pinStatusEl.textContent = 'Invio...';
+      await fetch('/pin-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin }),
+      });
+      pinStep.classList.add('hidden');
+      waitStep.classList.remove('hidden');
+    });
+
+    // Dopo aver salvato l'IP, l'app desktop avvia l'agent: se la TV chiede
+    // un PIN per la prima registrazione, questo endpoint lo segnala.
+    function pollForPin() {
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch('/pin-status');
+          const data = await res.json();
+          if (data.needed) {
+            clearInterval(interval);
+            waitStep.classList.add('hidden');
+            pinStep.classList.remove('hidden');
+          }
+        } catch (err) {
+          // ignorato, riprova al prossimo giro
+        }
+      }, 700);
+    }
+
+    pollForPin();
+  </script>
+</body>
+</html>

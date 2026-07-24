@@ -12,6 +12,11 @@ const rooms = new Map();
 // aprire il telecomando gia' collegato, senza doverlo digitare a mano.
 let lastCode = null;
 
+// Stato condiviso con desktop-agent.js (stesso processo, dentro Electron)
+// per la configurazione TV senza terminale: l'IP inserito dall'utente nella
+// pagina di setup, e l'eventuale PIN richiesto dalla TV al primo collegamento.
+global.PAIRBEAM = global.PAIRBEAM || { pinNeeded: false, pinValue: null };
+
 function generateCode() {
   let code;
   do {
@@ -32,6 +37,22 @@ function send(ws, obj) {
 // staticamente e le include nell'eseguibile. Il routing e' una whitelist
 // fissa, non costruita da req.url, per evitare path traversal.
 const mobileHtml = fs.readFileSync(path.join(__dirname, 'public/mobile.html'));
+const setupHtml = fs.readFileSync(path.join(__dirname, 'public/setup.html'));
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => { data += chunk; });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(data || '{}'));
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on('error', reject);
+  });
+}
 
 const server = http.createServer((req, res) => {
   // req.url include la query string (es. /mobile.html?code=123456):
@@ -44,9 +65,49 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (pathname === '/tv-setup' && req.method === 'POST') {
+    readJsonBody(req).then((data) => {
+      const ip = (data.ip || '').trim();
+      if (!ip) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'IP mancante' }));
+        return;
+      }
+      const configDir = process.env.TV_CONFIG_DIR || __dirname;
+      const configPath = path.join(configDir, 'tv-config.json');
+      fs.writeFileSync(configPath, JSON.stringify({ ip, psk: '', friendlyName: 'TV (manuale)' }, null, 2));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    }).catch(() => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Richiesta non valida' }));
+    });
+    return;
+  }
+
+  if (pathname === '/pin-status') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ needed: global.PAIRBEAM.pinNeeded }));
+    return;
+  }
+
+  if (pathname === '/pin-submit' && req.method === 'POST') {
+    readJsonBody(req).then((data) => {
+      global.PAIRBEAM.pinValue = (data.pin || '').trim();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    }).catch(() => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false }));
+    });
+    return;
+  }
+
   let body;
   if (pathname === '/' || pathname === '/mobile.html') {
     body = mobileHtml;
+  } else if (pathname === '/setup.html') {
+    body = setupHtml;
   } else {
     res.writeHead(404);
     res.end('Not found');
