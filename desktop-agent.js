@@ -24,9 +24,15 @@ const fs = require('fs');
 const path = require('path');
 
 const RELAY_URL = process.env.RELAY_URL || 'ws://localhost:3000';
-// Quando l'agent gira come eseguibile pacchettizzato (pkg), __dirname punta a un
-// filesystem virtuale in sola lettura: il config va salvato accanto al vero .exe.
-const BASE_DIR = process.pkg ? path.dirname(process.execPath) : __dirname;
+// Quando l'agent gira come eseguibile pacchettizzato (pkg) o dentro l'app
+// Electron (asar), __dirname punta a un filesystem in sola lettura: il
+// config va salvato altrove. TV_CONFIG_DIR (impostata dall'app Electron)
+// ha priorita', poi il fallback pkg, poi la cartella dello script.
+const BASE_DIR = process.env.TV_CONFIG_DIR
+  ? process.env.TV_CONFIG_DIR
+  : process.pkg
+  ? path.dirname(process.execPath)
+  : __dirname;
 const CONFIG_PATH = path.join(BASE_DIR, 'tv-config.json');
 
 // Codici IRCC standard Sony Bravia di fallback

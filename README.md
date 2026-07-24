@@ -12,14 +12,24 @@ Il sistema è composto da tre pezzi che comunicano tra loro:
 - **Agent** (`desktop-agent.js`) — gira sul PC collegato alla TV. Trova la TV in rete (SSDP/scansione subnet), si autentica con l'API Sony Bravia (IRCC) ed esegue i comandi ricevuti: accensione/spegnimento (con Wake-on-LAN), volume, canali, tastierino numerico, navigazione, tasti colorati, app smart (Netflix/SEN). All'avvio genera un **codice di pairing a 6 cifre**, stampato nella sua finestra di console.
 - **Pagina web** (`public/mobile.html`) — il telecomando touch: si apre nel browser (telefono o PC) e si collega inserendo il codice mostrato dall'agent.
 
+**`desktop-app/`** impacchetta relay + agent in un'unica app desktop (Electron): apre una finestra dedicata gia' collegata al telecomando, senza passare dal browser ne' digitare codici.
+
 ## Download
 
-Vai alla sezione [Releases](../../releases) e scarica gli eseguibili per Windows (non serve installare Node.js):
+Vai alla sezione [Releases](../../releases) e scarica l'eseguibile per Windows che preferisci (non serve installare Node.js):
 
-- **`bravia-remote-server.exe`** — avvia il relay e serve le pagine web su `http://localhost:3000`
-- **`bravia-remote-agent.exe`** — l'agent che gira accanto alla TV/PC da controllare
+- **`BraviaRemote.exe`** — **app unica consigliata**: un doppio click avvia relay + agent e apre direttamente la finestra del telecomando, gia' collegata. Nessun browser, nessun codice da digitare.
+- **`bravia-remote-server.exe`** + **`bravia-remote-agent.exe`** — versione classica a due processi separati, utile se vuoi il relay su un PC e l'agent su un altro (es. telefono in un'altra stanza rispetto al PC/TV).
+
+> **Avviso di Windows ("Editore sconosciuto" / SmartScreen):** questi eseguibili non sono firmati con un certificato a pagamento, quindi Windows mostra un avviso al primo avvio. E' normale per software indipendente distribuito cosi': clicca **"Ulteriori informazioni" -> "Esegui comunque"**. Se vuoi verificare l'origine, il codice sorgente e la build sono qui in questo repository pubblico.
 
 ## Come usarlo
+
+### App unica (consigliata)
+
+Scarica ed esegui **`BraviaRemote.exe`**: si apre subito la finestra del telecomando. Al primo avvio, se la TV non viene trovata automaticamente in rete, modifica `tv-config.json` nella cartella `%APPDATA%\bravia-remote-app` con l'IP della TV (vedi `tv-config.example.json`) e riavvia.
+
+### Versione classica (due eseguibili)
 
 1. Sul PC collegato alla TV, avvia **`bravia-remote-server.exe`**. Resta in ascolto su `http://localhost:3000`.
 2. Nella stessa cartella (o su un altro PC nella stessa rete), avvia **`bravia-remote-agent.exe`**. Al primo avvio scansiona la rete locale per trovare la TV Sony Bravia — se non la trova automaticamente, puoi inserire l'IP manualmente. Il risultato viene salvato in `tv-config.json` accanto all'eseguibile. Quando è pronto, la finestra di console mostra un **codice a 6 cifre**.
@@ -62,7 +72,16 @@ npm install
 npm start          # avvia il relay (server.js) in locale
 npm run agent      # avvia l'agent (desktop-agent.js) in locale
 
-npm run build       # genera entrambi gli eseguibili Windows in dist/
+npm run build       # genera i due eseguibili Windows classici in dist/
+```
+
+Per l'app unica (Electron):
+
+```bash
+cd desktop-app
+npm install
+npm start          # avvia l'app in modalita' sviluppo
+npm run dist        # genera dist-electron/BraviaRemote.exe
 ```
 
 ## Licenza

@@ -1,0 +1,41 @@
+{
+  "name": "bravia-remote-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App desktop unica per il telecomando Sony Bravia: avvia relay e agent e apre subito il telecomando.",
+  "author": "Diego Marinangeli",
+  "main": "main.js",
+  "scripts": {
+    "copy-shared": "node scripts/copy-shared.js",
+    "start": "npm run copy-shared && electron .",
+    "dist": "npm run copy-shared && electron-builder --win portable"
+  },
+  "dependencies": {
+    "node-ssdp": "^4.0.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.diegomarinangeli.braviaremote",
+    "productName": "Bravia Remote",
+    "files": [
+      "main.js",
+      "build/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist-electron"
+    },
+    "artifactName": "BraviaRemote.exe",
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    }
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
+  }
+}

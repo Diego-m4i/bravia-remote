@@ -8,6 +8,8 @@ tv-config.json
 # Build eseguibili
 dist/
 *.exe
+desktop-app/build/
+desktop-app/dist-electron/
 
 # Log e file temporanei
 *.log
