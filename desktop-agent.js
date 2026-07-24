@@ -128,6 +128,23 @@ function sendBraviaWoL(macAddress) {
     });
 }
 
+// Ricava il MAC address di un IP dalla tabella ARP del sistema operativo.
+// Funziona su Windows, Linux e macOS; richiede che l'host abbia gia'
+// scambiato almeno un pacchetto con quell'IP (una chiamata fetch basta).
+function getMacFromArp(ip) {
+  return new Promise((resolve) => {
+    const cmd = process.platform === 'win32' ? `arp -a ${ip}` : `arp -n ${ip}`;
+    exec(cmd, (err, stdout) => {
+      if (err || !stdout) {
+        resolve(null);
+        return;
+      }
+      const match = stdout.match(/([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}/);
+      resolve(match ? match[0] : null);
+    });
+  });
+}
+
 /* --- Scansione dispositivi in rete (SSDP/UPnP) --- */
 function ssdpDiscover(timeoutMs = 4000) {
   return new Promise((resolve) => {
@@ -603,6 +620,21 @@ async function main() {
     if (cookie) {
       tv.cookie = cookie;
       saveTvConfig(tv);
+    }
+  }
+
+  // Il Wake-on-LAN richiede il MAC address: se manca (config vecchia o
+  // scoperta automatica, che non lo rileva) proviamo a ricavarlo dalla
+  // tabella ARP, ora che abbiamo gia' scambiato pacchetti con la TV.
+  if (tv && !tv.mac) {
+    const mac = await getMacFromArp(tv.ip);
+    if (mac) {
+      tv.mac = mac;
+      saveTvConfig(tv);
+      console.log(`MAC address rilevato automaticamente: ${mac}`);
+    } else {
+      console.log('Impossibile rilevare automaticamente il MAC della TV: il Wake-on-LAN (accensione da spenta) non funzionera\'.');
+      console.log(`Aggiungilo manualmente nel campo "mac" di tv-config.json (lo trovi nelle impostazioni di rete della TV).`);
     }
   }
 

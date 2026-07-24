@@ -36,6 +36,10 @@ Il pulsante "Condividi Schermo" su Windows apre il pannello di sistema **Connett
 
 I comandi di play/pausa/volume del PC (`playerctl`, `xdotool`, `pactl`, `amixer`) sono pensati per Linux. Su Windows funzionano solo i comandi TV (accensione, IRCC, ecc.) — i tasti media/volume del PC non hanno ancora un equivalente Windows.
 
+### Accensione da spenta (Wake-on-LAN)
+
+La maggior parte delle Bravia si accende via rete solo con un pacchetto Wake-on-LAN, non con la normale chiamata API — serve quindi il MAC address della TV. L'agent prova a rilevarlo da solo dalla tabella ARP del sistema operativo dopo il primo contatto con la TV; se non ci riesce (es. TV su una subnet diversa), aggiungilo a mano nel campo `"mac"` di `tv-config.json` (formato `AA:BB:CC:DD:EE:FF`, lo trovi nelle impostazioni di rete della TV). Verifica anche che sulla TV sia attiva l'opzione **Wake on LAN** (Impostazioni > Rete).
+
 ### Diagnosticare comandi che non rispondono
 
 Se premendo un tasto la TV non reagisce, guarda la finestra di console dell'agent: ogni comando TV stampa la risposta HTTP ricevuta (o l'errore). Per un elenco completo dei codici IRCC effettivamente supportati dalla tua TV, avvia l'agent con la modalità diagnostica:
