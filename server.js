@@ -34,14 +34,18 @@ function send(ws, obj) {
 const mobileHtml = fs.readFileSync(path.join(__dirname, 'public/mobile.html'));
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/pairing-code') {
+  // req.url include la query string (es. /mobile.html?code=123456):
+  // confrontiamo solo il pathname, altrimenti il match fallisce.
+  const { pathname } = new URL(req.url, 'http://localhost');
+
+  if (pathname === '/pairing-code') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ code: lastCode }));
     return;
   }
 
   let body;
-  if (req.url === '/' || req.url === '/mobile.html') {
+  if (pathname === '/' || pathname === '/mobile.html') {
     body = mobileHtml;
   } else {
     res.writeHead(404);

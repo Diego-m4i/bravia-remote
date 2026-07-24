@@ -8,7 +8,7 @@
   "scripts": {
     "copy-shared": "node scripts/copy-shared.js",
     "start": "npm run copy-shared && electron .",
-    "dist": "npm run copy-shared && electron-builder --win portable"
+    "dist": "npm run copy-shared && electron-builder --win nsis"
   },
   "dependencies": {
     "node-ssdp": "^4.0.1",
@@ -29,10 +29,17 @@
     "directories": {
       "output": "dist-electron"
     },
-    "artifactName": "BraviaRemote.exe",
+    "artifactName": "BraviaRemote-Setup.exe",
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   },
   "allowScripts": {

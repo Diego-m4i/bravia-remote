@@ -18,7 +18,7 @@ Il sistema è composto da tre pezzi che comunicano tra loro:
 
 Vai alla sezione [Releases](../../releases) e scarica l'eseguibile per Windows che preferisci (non serve installare Node.js):
 
-- **`BraviaRemote.exe`** — **app unica consigliata**: un doppio click avvia relay + agent e apre direttamente la finestra del telecomando, gia' collegata. Nessun browser, nessun codice da digitare.
+- **`BraviaRemote-Setup.exe`** — **app unica consigliata**: un installer tradizionale (procedura guidata, scelta cartella, collegamento nel menu Start, disinstallabile da Windows come qualsiasi altro programma). Una volta installata, apre direttamente la finestra del telecomando, gia' collegata — nessun browser, nessun codice da digitare.
 - **`bravia-remote-server.exe`** + **`bravia-remote-agent.exe`** — versione classica a due processi separati, utile se vuoi il relay su un PC e l'agent su un altro (es. telefono in un'altra stanza rispetto al PC/TV).
 
 > **Avviso di Windows ("Editore sconosciuto" / SmartScreen):** questi eseguibili non sono firmati con un certificato a pagamento, quindi Windows mostra un avviso al primo avvio. E' normale per software indipendente distribuito cosi': clicca **"Ulteriori informazioni" -> "Esegui comunque"**. Se vuoi verificare l'origine, il codice sorgente e la build sono qui in questo repository pubblico.
@@ -27,7 +27,7 @@ Vai alla sezione [Releases](../../releases) e scarica l'eseguibile per Windows c
 
 ### App unica (consigliata)
 
-Scarica ed esegui **`BraviaRemote.exe`**: si apre subito la finestra del telecomando. Al primo avvio, se la TV non viene trovata automaticamente in rete, modifica `tv-config.json` nella cartella `%APPDATA%\bravia-remote-app` con l'IP della TV (vedi `tv-config.example.json`) e riavvia.
+Scarica ed esegui **`BraviaRemote-Setup.exe`**, segui la procedura guidata (si installa solo per il tuo utente, non serve essere amministratore). A installazione completata parte da sola e apre subito la finestra del telecomando; la trovi anche nel menu Start e sul desktop per le volte successive. Al primo avvio, se la TV non viene trovata automaticamente in rete, modifica `tv-config.json` nella cartella `%APPDATA%\bravia-remote-app` con l'IP della TV (vedi `tv-config.example.json`) e riavvia.
 
 ### Versione classica (due eseguibili)
 
@@ -81,7 +81,7 @@ Per l'app unica (Electron):
 cd desktop-app
 npm install
 npm start          # avvia l'app in modalita' sviluppo
-npm run dist        # genera dist-electron/BraviaRemote.exe
+npm run dist        # genera dist-electron/BraviaRemote-Setup.exe
 ```
 
 ## Licenza
