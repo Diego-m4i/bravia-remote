@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Telecomando - Desktop</title>
+<style>
+  body { font-family: sans-serif; max-width: 480px; margin: 60px auto; text-align: center; }
+  #code { font-size: 48px; letter-spacing: 8px; font-weight: bold; margin: 20px 0; }
+  #status { color: #666; margin-bottom: 20px; }
+  #log { text-align: left; border: 1px solid #ccc; border-radius: 8px; padding: 12px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 13px; }
+  .connected { color: green; }
+  .disconnected { color: #c00; }
+</style>
+</head>
+<body>
+  <h1>Desktop receiver</h1>
+  <p>Inserisci questo codice nell'app mobile:</p>
+  <div id="code">------</div>
+  <div id="status" class="disconnected">In attesa di connessione...</div>
+  <div id="log"></div>
+
+  <script>
+    const codeEl = document.getElementById('code');
+    const statusEl = document.getElementById('status');
+    const logEl = document.getElementById('log');
+
+    function log(text) {
+      const line = document.createElement('div');
+      line.textContent = new Date().toLocaleTimeString() + '  ' + text;
+      logEl.prepend(line);
+    }
+
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(proto + '//' + location.host);
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'create' }));
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'created') {
+        codeEl.textContent = msg.code;
+      }
+
+      if (msg.type === 'peer_connected') {
+        statusEl.textContent = 'Dispositivo mobile connesso';
+        statusEl.className = 'connected';
+      }
+
+      if (msg.type === 'peer_disconnected') {
+        statusEl.textContent = 'Dispositivo mobile disconnesso';
+        statusEl.className = 'disconnected';
+      }
+
+      if (msg.type === 'command') {
+        log('Comando ricevuto: ' + msg.cmd + (msg.value !== undefined ? ' = ' + msg.value : ''));
+        // TODO: qui in futuro colleghi il comando a un'azione reale
+        // es. simulare pressione tasti, controllare media player, ecc.
+      }
+    };
+
+    ws.onclose = () => {
+      statusEl.textContent = 'Connessione al relay persa';
+      statusEl.className = 'disconnected';
+    };
+  </script>
+</body>
+</html>

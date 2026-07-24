@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bravia Remote Dashboard</title>
+<style>
+  :root {
+    --bg-color: #0f0f11;
+    --remote-bg: #16161a;
+    --card-bg: #202024;
+    --btn-bg: #2e2e34;
+    --btn-active: #3e3e46;
+    --btn-text: #ffffff;
+    --accent-red: #e53935;
+    --accent-netflix: #e50914;
+    --text-muted: #aaaaaa;
+    
+    --color-red: #ff3b30;
+    --color-green: #4cd964;
+    --color-yellow: #ffcc00;
+    --color-blue: #007aff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    background-color: var(--bg-color); 
+    color: var(--btn-text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 10px;
+  }
+
+  .remote-container {
+    width: 100%;
+    max-width: 1280px;
+    background-color: var(--remote-bg);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    border: 1px solid #2a2a30;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #2a2a30;
+    padding-bottom: 16px;
+  }
+
+  h1 { 
+    font-size: 20px; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 3px; 
+    color: #fff;
+  }
+
+  /* --- PAIRING --- */
+  #pairing { 
+    text-align: center; 
+    padding: 60px 20px; 
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  #pairing p { color: var(--text-muted); margin-bottom: 20px; font-size: 15px; line-height: 1.5; }
+  input { 
+    font-size: 32px; text-align: center; letter-spacing: 8px; width: 100%; 
+    padding: 14px; border: none; background: var(--card-bg); color: #fff; border-radius: 14px;
+    margin-bottom: 20px; outline: none; border: 1px solid #3a3a42;
+  }
+  .btn-connect { 
+    font-size: 16px; font-weight: bold; padding: 14px 40px; border-radius: 12px; 
+    border: none; background: var(--accent-red); color: white; cursor: pointer; width: 100%;
+  }
+  .btn-connect:hover { filter: brightness(1.1); }
+
+  #status { font-size: 14px; font-weight: 600; padding: 6px 16px; border-radius: 20px; background: #222; }
+  .connected { color: var(--color-green); border: 1px solid rgba(76, 217, 100, 0.2); }
+  .disconnected { color: var(--color-red); border: 1px solid rgba(255, 59, 48, 0.2); }
+
+  /* Tasto PiP / Popup */
+  .btn-pip {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: 1px solid #3a3a42;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-pip:hover { background-color: var(--btn-active); }
+  .btn-pip svg { width: 14px; height: 14px; fill: currentColor; }
+
+  /* --- LAYOUT --- */
+  #controls { 
+    display: none; 
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 20px;
+    align-items: stretch;
+  }
+
+  .control-card {
+    background-color: var(--card-bg);
+    border-radius: 18px;
+    padding: 20px;
+    border: 1px solid #2a2a30;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .card-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    text-align: center;
+    font-weight: 700;
+    border-bottom: 1px solid #33333a;
+    padding-bottom: 8px;
+  }
+
+  button.btn {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, transform 0.05s;
+    user-select: none;
+  }
+  button.btn:hover { background-color: var(--btn-active); }
+  button.btn:active { transform: scale(0.97); }
+
+  .row-grid { display: grid; grid-gap: 10px; margin-bottom: 12px; }
+  .cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+  .btn-power { background-color: var(--accent-red) !important; color: white !important; }
+  .btn-netflix { background-color: var(--accent-netflix) !important; font-size: 11px !important; letter-spacing: 1px; }
+  .btn-sen { background-color: #002f6c !important; font-size: 11px !important; }
+
+  .keypad { grid-gap: 8px !important; }
+  .keypad button { padding: 10px 0; font-size: 16px; font-weight: 700; aspect-ratio: 1; border-radius: 50%; width: 44px; height: 44px; margin: 0 auto; }
+
+  .color-row { display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 8px; margin-top: auto; padding-top: 10px; }
+  .color-btn { height: 12px; border-radius: 6px; border: none; cursor: pointer; }
+  .color-btn:hover { filter: brightness(1.2); }
+  .color-red { background-color: var(--color-red); }
+  .color-green { background-color: var(--color-green); }
+  .color-yellow { background-color: var(--color-yellow); }
+  .color-blue { background-color: var(--color-blue); }
+
+  .dpad-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 8px;
+    width: 100%;
+    max-width: 180px;
+    margin: 16px auto;
+  }
+  .dpad-btn {
+    aspect-ratio: 1;
+    border-radius: 50% !important;
+    font-size: 14px;
+  }
+  .btn-ok {
+    background-color: #3e3e46 !important;
+    border: 1px solid #555562 !important;
+    font-weight: bold;
+  }
+  .dpad-empty { visibility: hidden; }
+
+  .rocker-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 12px;
+    flex-grow: 1;
+  }
+  .rocker-col {
+    display: flex;
+    flex-direction: column;
+    background-color: #28282d;
+    border-radius: 12px;
+    padding: 4px;
+    justify-content: space-between;
+  }
+  .rocker-col button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+  .rocker-col button:hover { background-color: var(--btn-active); }
+  .rocker-label { font-size: 10px; color: var(--text-muted); text-align: center; font-weight: bold; margin: 8px 0; }
+  .btn-mute-large { grid-column: span 2; margin-top: auto; }
+
+  svg { width: 18px; height: 18px; fill: currentColor; }
+
+  @media (max-width: 1024px) {
+    .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  
+  @media (max-width: 680px) {
+    body { padding: 8px; }
+    .remote-container { padding: 16px; border-radius: 14px; box-shadow: none; border: none; }
+    .dashboard-grid { grid-template-columns: 1fr; grid-gap: 16px; }
+    header h1 { font-size: 16px; }
+  }
+
+  /* ==========================================================================
+     MODALITÀ MICRO-WIDGET COMPATTA (ATTIVATA SUL POPUP)
+     ========================================================================== */
+  body.pip-active {
+    background-color: var(--remote-bg) !important;
+    padding: 8px !important;
+    overflow: hidden !important;
+    min-height: auto !important;
+    display: block !important;
+  }
+  body.pip-active .remote-container {
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  body.pip-active header {
+    display: none !important; 
+  }
+  body.pip-active .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr) !important; 
+    grid-gap: 8px !important;
+  }
+  body.pip-active .control-card {
+    padding: 8px !important;
+    border-radius: 12px !important;
+  }
+  body.pip-active .card-title {
+    margin-bottom: 8px !important;
+    padding-bottom: 4px !important;
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+  }
+  body.pip-active button.btn {
+    padding: 6px 2px !important;
+    font-size: 10px !important;
+    border-radius: 6px !important;
+    gap: 3px !important;
+  }
+  body.pip-active button.btn svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  body.pip-active .keypad {
+    grid-gap: 4px !important;
+  }
+  body.pip-active .keypad button {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+  }
+  body.pip-active .dpad-container {
+    max-width: 110px !important;
+    margin: 4px auto !important;
+    grid-gap: 4px !important;
+  }
+  body.pip-active .dpad-btn {
+    font-size: 10px !important;
+  }
+  body.pip-active .btn-ok {
+    font-size: 10px !important;
+  }
+  body.pip-active .rocker-container {
+    grid-gap: 6px !important;
+  }
+  body.pip-active .rocker-col {
+    padding: 2px !important;
+  }
+  body.pip-active .rocker-col button {
+    padding: 4px 0 !important;
+    font-size: 12px !important;
+  }
+  body.pip-active .rocker-label {
+    margin: 2px 0 !important;
+    font-size: 8px !important;
+  }
+  body.pip-active .btn-mute-large {
+    padding: 6px 2px !important;
+    font-size: 10px !important;
+    margin-top: 4px !important;
+  }
+  body.pip-active .btn-mute-large svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  body.pip-active .color-row {
+    padding-top: 6px !important;
+  }
+  body.pip-active .color-btn {
+    height: 8px !important;
+  }
+</style>
+</head>
+<body>
+
+  <div class="remote-container">
+    <header>
+      <h1>Sony Bravia</h1>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="pipBtn" class="btn-pip" onclick="enterPiP()" style="display: none;" title="Apri in modalità Popup sempre in primo piano">
+          <svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z"/></svg>
+          Popup
+        </button>
+        <div id="status" class="disconnected">In attesa...</div>
+      </div>
+    </header>
+
+    <div id="pairing">
+      <p>Inserisci il codice numerico a 6 cifre generato sul server agent per connettere la dashboard:</p>
+      <input id="codeInput" maxlength="6" inputmode="numeric" placeholder="000000">
+      <button class="btn-connect" onclick="joinRoom()">CONNETTI</button>
+    </div>
+
+    <div id="controls">
+      <div class="dashboard-grid">
+        
+        <div class="control-card">
+          <div class="card-title">
+            
+            <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C18.43 8.11 19 10 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2 .57-3.89 1.59-5.42L5.17 5.17C3.81 7.07 3 9.44 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.56-.81-4.93-2.17-6.83z"/></svg>           
+            Sistema & App</div>
+          <div class="row-grid cols-3">
+            <button class="btn" data-cmd="tv_input" onclick="sendCommand('tv_input')" title="Sorgente">
+              <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-10-7h9v6h-9z"/></svg>
+              Input
+            </button>
+            <button class="btn" data-cmd="tv_sync_menu" onclick="sendCommand('tv_sync_menu')">Sync</button>
+            <button onclick="sendCommand('tv_power')" style="background: #e74c3c; color: white; font-weight: bold;">Accendi / Spegni TV</button>
+            
+            </button>
+          </div>
+          
+          <div class="row-grid cols-2">
+            <button class="btn btn-netflix" data-cmd="tv_netflix" onclick="sendCommand('tv_netflix')">NETFLIX</button>
+            <button class="btn btn-sen" data-cmd="tv_sen" onclick="sendCommand('tv_sen')">SEN</button>
+          </div>
+
+          <div class="color-row">
+            <button class="color-btn color-red" data-cmd="tv_red" onclick="sendCommand('tv_red')" title="Rosso"></button>
+            <button class="color-btn color-green" data-cmd="tv_green" onclick="sendCommand('tv_green')" title="Verde"></button>
+            <button class="color-btn color-yellow" data-cmd="tv_yellow" onclick="sendCommand('tv_yellow')" title="Giallo"></button>
+            <button class="color-btn color-blue" data-cmd="tv_blue" onclick="sendCommand('tv_blue')" title="Blu"></button>
+          </div>
+        </div>
+<h3 style="margin-top:24px; font-size:14px; color:#666;">Condivisione</h3>
+<button onclick="sendCommand('tv_mirroring')" style="background: #27ae60; color: white;">Condividi Schermo (Wireless)</button>
+        <div class="control-card">
+          <div class="card-title">Tastierino</div>
+          <div class="row-grid cols-3 keypad">
+            <button class="btn" data-cmd="tv_num1" onclick="sendCommand('tv_num1')">1</button>
+            <button class="btn" data-cmd="tv_num2" onclick="sendCommand('tv_num2')">2</button>
+            <button class="btn" data-cmd="tv_num3" onclick="sendCommand('tv_num3')">3</button>
+            <button class="btn" data-cmd="tv_num4" onclick="sendCommand('tv_num4')">4</button>
+            <button class="btn" data-cmd="tv_num5" onclick="sendCommand('tv_num5')">5</button>
+            <button class="btn" data-cmd="tv_num6" onclick="sendCommand('tv_num6')">6</button>
+            <button class="btn" data-cmd="tv_num7" onclick="sendCommand('tv_num7')">7</button>
+            <button class="btn" data-cmd="tv_num8" onclick="sendCommand('tv_num8')">8</button>
+            <button class="btn" data-cmd="tv_num9" onclick="sendCommand('tv_num9')">9</button>
+            <!-- <button class="btn" data-cmd="tv_dot" style="font-size: 20px; line-height: 10px;" onclick="sendCommand('tv_dot')">.</button> -->
+            <button class="btn" data-cmd="tv_num0" onclick="sendCommand('tv_num0')">0</button>
+            <!-- <button class="btn" data-cmd="tv_enter" style="font-size: 10px; border-radius: 8px; width: auto; height: auto; aspect-ratio: auto;" onclick="sendCommand('tv_enter')">ENT</button> -->
+          </div>
+        </div>
+
+        <div class="control-card">
+          <div class="card-title">Navigazione</div>
+          <div class="row-grid cols-3">
+            <button class="btn" data-cmd="tv_display" style="font-size:11px;" onclick="sendCommand('tv_display')">Info</button>
+            <button class="btn" data-cmd="tv_home" style="font-size:11px;" onclick="sendCommand('tv_home')">Home</button>
+            <button class="btn" data-cmd="tv_options" style="font-size:11px;" onclick="sendCommand('tv_options')">Opt</button>
+          </div>
+
+          <div class="dpad-container">
+            <div class="dpad-empty"></div>
+            <button class="btn dpad-btn" data-cmd="tv_up" onclick="sendCommand('tv_up')">▲</button>
+            <div class="dpad-empty"></div>
+
+            <button class="btn dpad-btn" data-cmd="tv_left" onclick="sendCommand('tv_left')">◀</button>
+            <button class="btn btn-ok" data-cmd="tv_confirm" onclick="sendCommand('tv_confirm')">OK</button>
+            <button class="btn dpad-btn" data-cmd="tv_right" onclick="sendCommand('tv_right')">▶</button>
+
+            <div class="dpad-empty"></div>
+            <button class="btn dpad-btn" data-cmd="tv_down" onclick="sendCommand('tv_down')">▼</button>
+            <div class="dpad-empty"></div>
+          </div>
+
+          <div class="row-grid cols-2">
+            <button class="btn" data-cmd="tv_return" onclick="sendCommand('tv_return')">Return</button>
+            <button class="btn" data-cmd="tv_exit" onclick="sendCommand('tv_exit')">Exit</button>
+          </div>
+        </div>
+
+        <div class="control-card">
+          <div class="card-title">Audio & TV</div>
+          <div class="rocker-container">
+            <div class="rocker-col">
+              <button data-cmd="tv_volume_up" onclick="sendCommand('tv_volume_up')">+</button>
+              <div class="rocker-label">VOL</div>
+              <button data-cmd="tv_volume_down" onclick="sendCommand('tv_volume_down')">-</button>
+            </div>
+            <div class="rocker-col">
+              <button data-cmd="tv_channel_up" onclick="sendCommand('tv_channel_up')">+</button>
+              <div class="rocker-label">CH</div>
+              <button data-cmd="tv_channel_down" onclick="sendCommand('tv_channel_down')">-</button>
+            </div>
+          </div>
+          <button class="btn btn-mute-large" data-cmd="tv_mute" onclick="sendCommand('tv_mute')">
+            <svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.03c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+            Muto
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const pairingEl = document.getElementById('pairing');
+    const controlsEl = document.getElementById('controls');
+    const pipBtn = document.getElementById('pipBtn');
+
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(proto + '//' + location.host);
+
+    window.pipWindow = null;
+    window.pipWindowDocument = null;
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'joined') {
+        pairingEl.style.display = 'none';
+        controlsEl.style.display = 'block';
+        pipBtn.style.display = 'flex'; 
+        statusEl.textContent = 'CONNESSO';
+        statusEl.className = 'connected';
+      }
+
+      if (msg.type === 'error') {
+        statusEl.textContent = msg.message;
+        statusEl.className = 'disconnected';
+      }
+
+      if (msg.type === 'peer_disconnected') {
+        statusEl.textContent = 'TV SCOLLEGATA';
+        statusEl.className = 'disconnected';
+        controlsEl.style.display = 'none';
+        pairingEl.style.display = 'block';
+        pipBtn.style.display = 'none';
+        
+        if (window.pipWindow) {
+          window.pipWindow.close();
+        }
+      }
+    };
+
+    ws.onclose = () => {
+      statusEl.textContent = 'RELAY PERSO';
+      statusEl.className = 'disconnected';
+    };
+
+    function joinRoom() {
+      const code = document.getElementById('codeInput').value.trim();
+      if (code.length !== 6) return;
+      ws.send(JSON.stringify({ type: 'join', code }));
+    }
+
+    function sendCommand(cmd) {
+      ws.send(JSON.stringify({ type: 'command', cmd }));
+    }
+
+    /* --- CONTROLLO DA TASTIERA RI-MAPPATO --- */
+    function handleKeyDown(event) {
+      const activeElement = event.currentTarget.activeElement;
+      
+      if (activeElement && activeElement.id === 'codeInput') {
+        return;
+      }
+
+      if (event.ctrlKey || event.altKey || event.metaKey) {
+        return;
+      }
+
+      const key = event.key;
+      const code = event.code;
+
+      if (code.startsWith('Digit') || code.startsWith('Numpad')) {
+        const num = code.replace('Digit', '').replace('Numpad', '');
+        if (num >= '0' && num <= '9') {
+          const targetCmd = 'tv_num' + num;
+          sendCommand(targetCmd);
+          flashElement(targetCmd);
+          event.preventDefault();
+          return;
+        }
+      }
+
+      let cmdToSend = null;
+
+      switch (code) {
+        case 'NumpadDecimal':
+        case 'Period':
+        case 'Comma':
+          cmdToSend = 'tv_dot';
+          break;
+        case 'NumpadEnter':
+        case 'Enter':
+          cmdToSend = 'tv_confirm';
+          break;
+        
+        /* MAPPATURE RICHIESTE: */
+        case 'ArrowUp':
+          cmdToSend = 'tv_volume_up'; // Alza Volume
+          break;
+        case 'ArrowDown':
+          cmdToSend = 'tv_volume_down'; // Abbassa Volume
+          break;
+        case 'ArrowLeft':
+          cmdToSend = 'tv_channel_down'; // Canale Precedente
+          break;
+        case 'ArrowRight':
+          cmdToSend = 'tv_channel_up'; // Canale Successivo
+          break;
+
+        case 'Backspace':
+          cmdToSend = 'tv_return';
+          break;
+        case 'Escape':
+          cmdToSend = 'tv_exit';
+          break;
+        case 'NumpadAdd':
+          cmdToSend = 'tv_volume_up';
+          break;
+        case 'NumpadSubtract':
+          cmdToSend = 'tv_volume_down';
+          break;
+        case 'PageUp':
+          cmdToSend = 'tv_channel_up';
+          break;
+        case 'PageDown':
+          cmdToSend = 'tv_channel_down';
+          break;
+      }
+
+      if (!cmdToSend) {
+        if (key === '+') cmdToSend = 'tv_volume_up';
+        else if (key === '-') cmdToSend = 'tv_volume_down';
+        else if (key.toLowerCase() === 'm') cmdToSend = 'tv_mute';
+      }
+
+      if (cmdToSend) {
+        sendCommand(cmdToSend);
+        flashElement(cmdToSend);
+        event.preventDefault();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    function flashElement(cmd) {
+      let el = document.querySelector(`[data-cmd="${cmd}"]`);
+      
+      if (!el && window.pipWindowDocument) {
+        el = window.pipWindowDocument.querySelector(`[data-cmd="${cmd}"]`);
+      }
+      
+      if (el) {
+        const originalBg = el.style.backgroundColor;
+        el.style.backgroundColor = 'var(--btn-active)';
+        el.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          el.style.backgroundColor = originalBg;
+          el.style.transform = '';
+        }, 120);
+      }
+    }
+
+    /* --- GENERAZIONE DEL POPUP (INTEGRATO CON GNOME/FIREFOX) --- */
+    async function enterPiP() {
+      if (window.pipWindow) return;
+
+      const container = document.querySelector('.remote-container');
+
+      // Se Chrome/Edge: usa l'API nativa fluttuante
+      if ('documentPictureInPicture' in window) {
+        try {
+          const pipWindow = await window.documentPictureInPicture.requestWindow({
+            width: 320,
+            height: 380,
+          });
+
+          window.pipWindow = pipWindow;
+          window.pipWindowDocument = pipWindow.document;
+          pipWindow.document.body.classList.add('pip-active');
+          pipWindow.sendCommand = sendCommand;
+
+          const styleSheets = Array.from(document.styleSheets);
+          styleSheets.forEach((styleSheet) => {
+            try {
+              const cssRules = Array.from(styleSheet.cssRules).map(rule => rule.cssText).join('');
+              const style = pipWindow.document.createElement('style');
+              style.textContent = cssRules;
+              pipWindow.document.head.appendChild(style);
+            } catch (e) {
+              const link = pipWindow.document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = styleSheet.href;
+              pipWindow.document.head.appendChild(link);
+            }
+          });
+
+          const placeholder = document.createElement('div');
+          placeholder.id = 'pip-placeholder';
+          placeholder.style.cssText = 'padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;';
+          placeholder.innerHTML = `
+            <p style="margin-bottom: 12px;">Telecomando attivo in modalità <b>Sempre in Primo Piano</b>.</p>
+            <button class="btn-pip" onclick="window.pipWindow.close()" style="margin: 0 auto;">Ripristina Finestra</button>
+          `;
+
+          container.parentNode.replaceChild(placeholder, container);
+          pipWindow.document.body.appendChild(container);
+          pipWindow.document.addEventListener('keydown', handleKeyDown);
+
+          pipWindow.addEventListener('pagehide', () => {
+            placeholder.parentNode.replaceChild(container, placeholder);
+            document.getElementById('pipBtn').style.display = 'flex';
+            window.pipWindow = null;
+            window.pipWindowDocument = null;
+          });
+
+        } catch (err) {
+          console.error("Errore PiP nativo, avvio fallback:", err);
+          fallbackPopup();
+        }
+      } else {
+        // Se Firefox: avvia il popup speciale configurato per GNOME PiP Extension
+        fallbackPopup();
+      }
+    }
+
+    function fallbackPopup() {
+      const width = 320;
+      const height = 380;
+      const left = (screen.width / 2) - (width / 2);
+      const top = (screen.height / 2) - (height / 2);
+
+      // Crea un popup vuoto (about:blank)
+      const pipWindow = window.open(
+        '',
+        'BraviaRemotePopup',
+        `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+      );
+
+      if (!pipWindow) {
+        alert("Popup bloccato! Abilita i popup per questo sito per poter usare il widget.");
+        return;
+      }
+
+      window.pipWindow = pipWindow;
+      window.pipWindowDocument = pipWindow.document;
+
+      // Impostiamo il titolo ESATTO a "Picture-in-Picture"
+      // L'estensione GNOME "Firefox PiP Always on Top" intercetterà questa finestra e la metterà "Always on Top" automaticamente!
+      pipWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="it">
+        <head>
+          <meta charset="UTF-8">
+          <title>Picture-in-Picture</title>
+        </head>
+        <body class="pip-active">
+        </body>
+        </html>
+      `);
+      pipWindow.document.close();
+
+      const container = document.querySelector('.remote-container');
+
+      // Copia i fogli di stile
+      const styleSheets = Array.from(document.styleSheets);
+      styleSheets.forEach((styleSheet) => {
+        try {
+          const cssRules = Array.from(styleSheet.cssRules).map(rule => rule.cssText).join('');
+          const style = pipWindow.document.createElement('style');
+          style.textContent = cssRules;
+          pipWindow.document.head.appendChild(style);
+        } catch (e) {
+          const link = pipWindow.document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = styleSheet.href;
+          pipWindow.document.head.appendChild(link);
+        }
+      });
+
+      // Placeholder nella finestra padre
+      const placeholder = document.createElement('div');
+      placeholder.id = 'pip-placeholder';
+      placeholder.style.cssText = 'padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;';
+      placeholder.innerHTML = `
+        <p style="margin-bottom: 12px;">Telecomando fluttuante attivo in <b>Firefox (GNOME PiP Mode)</b>.</p>
+        <button class="btn-pip" onclick="window.pipWindow.close()" style="margin: 0 auto;">Ripristina</button>
+      `;
+
+      container.parentNode.replaceChild(placeholder, container);
+      pipWindow.document.body.appendChild(container);
+
+      pipWindow.sendCommand = sendCommand;
+
+      // Gestione input tastiera dentro il popup di Firefox
+      pipWindow.document.addEventListener('keydown', handleKeyDown);
+
+      // Quando si chiude il popup, ripristina il layout originale senza ricaricare nulla
+      const handleClose = () => {
+        if (document.getElementById('pip-placeholder')) {
+          placeholder.parentNode.replaceChild(container, placeholder);
+        }
+        document.getElementById('pipBtn').style.display = 'flex';
+        window.pipWindow = null;
+        window.pipWindowDocument = null;
+      };
+
+      pipWindow.addEventListener('pagehide', handleClose);
+      pipWindow.addEventListener('beforeunload', handleClose);
+    }
+  </script>
+</body>
+</html>

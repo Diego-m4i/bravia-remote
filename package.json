@@ -1,0 +1,19 @@
+{
+  "name": "bravia-remote",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "agent": "node desktop-agent.js",
+    "build:agent": "pkg desktop-agent.js --targets node18-win-x64 --output dist/bravia-remote-agent.exe",
+    "build:server": "pkg server.js --targets node18-win-x64 --output dist/bravia-remote-server.exe",
+    "build": "npm run build:server && npm run build:agent"
+  },
+  "dependencies": {
+    "node-ssdp": "^4.0.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  }
+}

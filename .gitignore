@@ -1,0 +1,15 @@
+node_modules/
+venv/
+.claude/
+
+# Configurazione locale con dati sensibili (IP, MAC, cookie di autenticazione TV)
+tv-config.json
+
+# Build eseguibili
+dist/
+*.exe
+
+# Log e file temporanei
+*.log
+.DS_Store
+Thumbs.db
