@@ -9,7 +9,7 @@ Il sistema è composto da tre pezzi che comunicano tra loro:
 ```
 
 - **Relay** (`server.js`) — piccolo server che fa da ponte: inoltra i comandi dalla pagina web all'agent, e serve `mobile.html`.
-- **Agent** (`desktop-agent.js`) — gira sul PC collegato alla TV. Trova la TV in rete (SSDP/scansione subnet), si autentica con l'API Sony Bravia (IRCC) ed esegue i comandi ricevuti: accensione/spegnimento (con Wake-on-LAN), volume, canali, tastierino numerico, navigazione, tasti colorati, app smart (Netflix/SEN) e mirroring dello schermo. All'avvio genera un **codice di pairing a 6 cifre**, stampato nella sua finestra di console.
+- **Agent** (`desktop-agent.js`) — gira sul PC collegato alla TV. Trova la TV in rete (SSDP/scansione subnet), si autentica con l'API Sony Bravia (IRCC) ed esegue i comandi ricevuti: accensione/spegnimento (con Wake-on-LAN), volume, canali, tastierino numerico, navigazione, tasti colorati, app smart (Netflix/SEN). All'avvio genera un **codice di pairing a 6 cifre**, stampato nella sua finestra di console.
 - **Pagina web** (`public/mobile.html`) — il telecomando touch: si apre nel browser (telefono o PC) e si collega inserendo il codice mostrato dall'agent.
 
 ## Download
@@ -27,10 +27,6 @@ Vai alla sezione [Releases](../../releases) e scarica gli eseguibili per Windows
 4. Controlla la TV (e il PC, su Linux) dalla pagina.
 
 > Se l'agent gira su un PC diverso da quello che ospita il relay, imposta la variabile d'ambiente `RELAY_URL` (es. `RELAY_URL=ws://192.168.1.10:3000`) prima di avviarlo.
-
-### Condivisione schermo
-
-Il pulsante "Condividi Schermo" su Windows apre il pannello di sistema **Connetti** (lo stesso di `Win+K`): scegli la TV dalla lista e Windows gestisce da solo lo streaming Miracast. Su Linux tenta invece una cattura con `ffmpeg` (richiede `ffmpeg` installato).
 
 ### Nota sui controlli multimediali del PC
 

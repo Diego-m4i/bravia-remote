@@ -17,7 +17,7 @@ ssdpServer.addUSN('urn:schemas-upnp-org:device:MediaServer:1');
 ssdpServer.start();
 
 const WebSocket = require('ws');
-const { exec, spawn } = require('child_process');
+const { exec } = require('child_process');
 const dgram = require('dgram');
 const readline = require('readline');
 const fs = require('fs');
@@ -458,35 +458,8 @@ async function braviaIrcc(code) {
 
 
 
-let streamProcess = null;
 /* --- ASSOCIAZIONE TASTI E AZIONI --- */
 const ACTIONS = {
-
-
-tv_mirroring: () => {
-    if (process.platform === 'win32') {
-      // Apre il pannello di sistema "Connetti" (Miracast), lo stesso di Win+K:
-      // Windows gestisce da solo scoperta e streaming verso la TV.
-      console.log('Apro il pannello "Connetti" di Windows per il mirroring wireless...');
-      run('explorer.exe ms-availablenetworks:');
-      return;
-    }
-
-    // Linux: cattura schermo con ffmpeg (richiede ffmpeg installato e X11).
-    if (streamProcess) {
-        console.log("Termino lo streaming...");
-        streamProcess.kill();
-        streamProcess = null;
-    } else {
-        console.log("Avvio cattura schermo per streaming DLNA...");
-        streamProcess = spawn('ffmpeg', [
-            '-f', 'x11grab', '-framerate', '24', '-video_size', '1920x1080',
-            '-i', ':0.0', '-c:v', 'libx264', '-preset', 'ultrafast',
-            '-f', 'mpegts', 'udp://127.0.0.1:1234'
-        ]);
-    }
-},
-
   // --- COMANDI PC DESKTOP (Eseguiti localmente tramite bash) ---
   play_pause: () => run('playerctl play-pause || xdotool key XF86AudioPlay'),
   volume_up: () => run('pactl set-sink-volume @DEFAULT_SINK@ +5% || amixer -q sset Master 5%+'),
