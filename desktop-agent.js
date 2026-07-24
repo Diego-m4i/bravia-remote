@@ -390,6 +390,9 @@ async function getRemoteControllerInfo() {
   }
 }
 
+// Mappa inversa codice -> nome, solo per log leggibili
+const IRCC_NAMES = Object.fromEntries(Object.entries(IRCC).map(([name, code]) => [code, name]));
+
 async function braviaJsonCall(endpoint, method, params, version = '1.0') {
   if (!tv) return;
   const headers = { 'Content-Type': 'application/json' };
@@ -401,7 +404,12 @@ async function braviaJsonCall(endpoint, method, params, version = '1.0') {
       headers,
       body: JSON.stringify({ method, id: 1, params, version }),
     });
-    if (!res.ok) console.error(`TV: risposta HTTP ${res.status} da ${endpoint}/${method}`);
+    const text = await res.text();
+    if (res.ok) {
+      console.log(`TV: ${endpoint}/${method} -> HTTP ${res.status} ${text.slice(0, 200)}`);
+    } else {
+      console.error(`TV: ${endpoint}/${method} -> HTTP ${res.status} ${text.slice(0, 200)}`);
+    }
   } catch (err) {
     console.error(`TV: errore chiamando ${endpoint}/${method}:`, err.message);
   }
@@ -409,6 +417,7 @@ async function braviaJsonCall(endpoint, method, params, version = '1.0') {
 
 async function braviaIrcc(code) {
   if (!tv) return;
+  const label = IRCC_NAMES[code] || code;
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
 <s:Body><u:X_SendIRCC xmlns:u="urn:schemas-sony-com:service:IRCC:1"><IRCCCode>${code}</IRCCCode></u:X_SendIRCC></s:Body>
@@ -418,9 +427,14 @@ async function braviaIrcc(code) {
   else if (tv.psk) headers['X-Auth-PSK'] = tv.psk;
   try {
     const res = await fetch(`http://${tv.ip}/sony/IRCC`, { method: 'POST', headers, body });
-    if (!res.ok) console.error(`TV: risposta HTTP ${res.status} da IRCC`);
+    const text = await res.text();
+    if (res.ok) {
+      console.log(`TV: IRCC "${label}" -> HTTP ${res.status} ${text.slice(0, 200)}`);
+    } else {
+      console.error(`TV: IRCC "${label}" -> HTTP ${res.status} ${text.slice(0, 200)}`);
+    }
   } catch (err) {
-    console.error('TV: errore IRCC:', err.message);
+    console.error(`TV: errore IRCC "${label}":`, err.message);
   }
 }
 
@@ -432,18 +446,25 @@ let streamProcess = null;
 const ACTIONS = {
 
 
-// Aggiungi questo all'interno dell'oggetto ACTIONS
 tv_mirroring: () => {
+    if (process.platform === 'win32') {
+      // Apre il pannello di sistema "Connetti" (Miracast), lo stesso di Win+K:
+      // Windows gestisce da solo scoperta e streaming verso la TV.
+      console.log('Apro il pannello "Connetti" di Windows per il mirroring wireless...');
+      run('explorer.exe ms-availablenetworks:');
+      return;
+    }
+
+    // Linux: cattura schermo con ffmpeg (richiede ffmpeg installato e X11).
     if (streamProcess) {
         console.log("Termino lo streaming...");
         streamProcess.kill();
         streamProcess = null;
     } else {
         console.log("Avvio cattura schermo per streaming DLNA...");
-        // Avviamo lo streaming tramite ffmpeg
         streamProcess = spawn('ffmpeg', [
-            '-f', 'x11grab', '-framerate', '24', '-video_size', '1920x1080', 
-            '-i', ':0.0', '-c:v', 'libx264', '-preset', 'ultrafast', 
+            '-f', 'x11grab', '-framerate', '24', '-video_size', '1920x1080',
+            '-i', ':0.0', '-c:v', 'libx264', '-preset', 'ultrafast',
             '-f', 'mpegts', 'udp://127.0.0.1:1234'
         ]);
     }
@@ -470,19 +491,21 @@ tv_mirroring: () => {
       if (tv.cookie) headers['Cookie'] = tv.cookie;
       else if (tv.psk) headers['X-Auth-PSK'] = tv.psk;
 
-      // Interroga lo stato energetico della TV con un timeout rapido di 1 secondo
+      // Interroga lo stato energetico della TV (timeout piu' largo: appena
+      // uscita dalla standby la TV puo' rispondere con latenza).
       const res = await fetch(`http://${tv.ip}/sony/system`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ method: 'getPowerStatus', id: 1, params: [], version: '1.0' }),
-        signal: AbortSignal.timeout(1000),
+        signal: AbortSignal.timeout(2500),
       });
       const data = await res.json();
-      if (data.result && data.result[0]) {
-        isTvOn = (data.result[0].status === 'active');
-      }
+      const status = data.result && data.result[0] && data.result[0].status;
+      isTvOn = status === 'active';
+      console.log(`[Power Toggle] Stato rilevato: ${status || 'sconosciuto'} (${JSON.stringify(data)})`);
     } catch (err) {
       // Se va in timeout o restituisce un errore di rete, significa che la TV è spenta o in standby profondo
+      console.log(`[Power Toggle] Nessuna risposta dalla TV (${err.message}), presumo sia spenta.`);
       isTvOn = false;
     }
 
@@ -490,11 +513,20 @@ tv_mirroring: () => {
       console.log("[Power Toggle] La TV è accesa. Invio spegnimento...");
       braviaIrcc(IRCC.power_off);
     } else {
-      console.log("[Power Toggle] La TV è spenta. Invio pacchetto WoL e accensione...");
+      console.log("[Power Toggle] La TV è spenta. Invio pacchetti Wake-on-LAN e richiesta di accensione...");
       if (tv.mac) {
+        // Un singolo pacchetto UDP puo' andare perso: ne inviamo 3 a breve distanza.
         sendBraviaWoL(tv.mac);
+        setTimeout(() => sendBraviaWoL(tv.mac), 400);
+        setTimeout(() => sendBraviaWoL(tv.mac), 1000);
+      } else {
+        console.log('[Power Toggle] Nessun MAC configurato in tv-config.json: impossibile inviare Wake-on-LAN.');
       }
+      // Riprova la chiamata IP di accensione piu' volte: appena il WoL sveglia
+      // il chip di rete la TV impiega qualche secondo prima di rispondere.
       braviaJsonCall('system', 'setPowerStatus', [{ status: true }]);
+      setTimeout(() => braviaJsonCall('system', 'setPowerStatus', [{ status: true }]), 1500);
+      setTimeout(() => braviaJsonCall('system', 'setPowerStatus', [{ status: true }]), 3500);
     }
   },
 

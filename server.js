@@ -27,14 +27,11 @@ function send(ws, obj) {
 // (fs.readFileSync(path.join(__dirname, ...))) cosi' pkg le individua
 // staticamente e le include nell'eseguibile. Il routing e' una whitelist
 // fissa, non costruita da req.url, per evitare path traversal.
-const desktopHtml = fs.readFileSync(path.join(__dirname, 'public/desktop.html'));
 const mobileHtml = fs.readFileSync(path.join(__dirname, 'public/mobile.html'));
 
 const server = http.createServer((req, res) => {
   let body;
-  if (req.url === '/' || req.url === '/desktop.html') {
-    body = desktopHtml;
-  } else if (req.url === '/mobile.html') {
+  if (req.url === '/' || req.url === '/mobile.html') {
     body = mobileHtml;
   } else {
     res.writeHead(404);
