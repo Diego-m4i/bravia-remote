@@ -6,8 +6,8 @@
 <title>PairBeam</title>
 <style>
   :root {
-    --bg-color: #0f0f11;
-    --remote-bg: #16161a;
+    --bg-color: #000000;
+    --remote-bg: #000000;
     --card-bg: #202024;
     --btn-bg: #2e2e34;
     --btn-active: #3e3e46;
@@ -33,11 +33,7 @@
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background:
-      radial-gradient(circle at 12% 15%, rgba(229, 57, 53, 0.22), transparent 45%),
-      radial-gradient(circle at 88% 12%, rgba(0, 122, 255, 0.16), transparent 50%),
-      radial-gradient(circle at 50% 100%, rgba(76, 217, 100, 0.1), transparent 55%),
-      var(--bg-color);
+    background: var(--bg-color);
     color: var(--btn-text);
     display: flex;
     justify-content: center;
@@ -46,7 +42,59 @@
     padding: 10px;
   }
 
+  .glow-orb {
+    position: fixed;
+    z-index: 0;
+    border-radius: 50%;
+    filter: blur(70px);
+    pointer-events: none;
+    will-change: transform;
+  }
+  .glow-orb.red {
+    width: 46vw;
+    height: 46vw;
+    background: radial-gradient(circle, rgba(255, 61, 0, 0.85), rgba(255, 61, 0, 0) 70%);
+    animation: driftA 24s ease-in-out infinite;
+  }
+  .glow-orb.blue {
+    width: 38vw;
+    height: 38vw;
+    background: radial-gradient(circle, rgba(0, 122, 255, 0.8), rgba(0, 122, 255, 0) 70%);
+    animation: driftB 29s ease-in-out infinite;
+  }
+  .glow-orb.red2 {
+    width: 32vw;
+    height: 32vw;
+    background: radial-gradient(circle, rgba(255, 87, 34, 0.75), rgba(255, 87, 34, 0) 70%);
+    animation: driftC 34s ease-in-out infinite;
+  }
+
+  @keyframes driftA {
+    0%   { top: -12%;  left: 4%;  }
+    30%  { top: 46%;   left: 62%; }
+    60%  { top: 68%;   left: 8%;  }
+    100% { top: -12%;  left: 4%;  }
+  }
+  @keyframes driftB {
+    0%   { top: 60%;  left: 70%; }
+    35%  { top: 6%;   left: 48%; }
+    70%  { top: 42%;  left: -6%; }
+    100% { top: 60%;  left: 70%; }
+  }
+  @keyframes driftC {
+    0%   { top: 20%;  left: 30%; }
+    40%  { top: 74%;  left: 66%; }
+    75%  { top: 40%;  left: 82%; }
+    100% { top: 20%;  left: 30%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow-orb { animation: none; }
+  }
+
   .remote-container {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 1280px;
     background: var(--glass-bg);
@@ -360,6 +408,10 @@
 </style>
 </head>
 <body>
+
+  <div class="glow-orb red"></div>
+  <div class="glow-orb blue"></div>
+  <div class="glow-orb red2"></div>
 
   <div class="remote-container">
     <header>
