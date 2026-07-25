@@ -68,6 +68,22 @@ async function createWindow() {
     icon: path.join(__dirname, 'assets/icon.png'),
   });
 
+  // Da' un'icona vera alla finestra del popup (Tasto "Popup" nel telecomando),
+  // che altrimenti erediterebbe l'icona generica di Electron.
+  win.webContents.setWindowOpenHandler((details) => {
+    if (details.frameName === 'PairBeamPopup') {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          icon: path.join(__dirname, 'assets/icon.png'),
+          backgroundColor: '#0f0f11',
+          autoHideMenuBar: true,
+        },
+      };
+    }
+    return { action: 'allow' };
+  });
+
   if (!fs.existsSync(CONFIG_PATH)) {
     // Primo avvio: niente scansione automatica della rete (dipende troppo
     // da quale rete e' attiva sul PC in quel momento). Chiediamo l'IP

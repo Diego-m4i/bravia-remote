@@ -12,6 +12,12 @@
     --btn-text: #ffffff;
     --accent-red: #e53935;
     --text-muted: #aaaaaa;
+
+    /* Liquid glass */
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-bg-strong: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-highlight: rgba(255, 255, 255, 0.16);
   }
   * { box-sizing: border-box; }
   body {
@@ -20,13 +26,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-color);
+    background:
+      radial-gradient(circle at 12% 15%, rgba(229, 57, 53, 0.22), transparent 45%),
+      radial-gradient(circle at 88% 12%, rgba(0, 122, 255, 0.16), transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(76, 217, 100, 0.1), transparent 55%),
+      var(--bg-color);
     color: var(--btn-text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     padding: 20px;
   }
   .card {
-    background: var(--card-bg);
+    background: var(--glass-bg);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 var(--glass-highlight);
     border-radius: 20px;
     padding: 32px 28px;
     max-width: 380px;
@@ -41,8 +55,11 @@
     letter-spacing: 1px;
     width: 100%;
     padding: 14px;
-    border: 1px solid #3a3a42;
-    background: var(--btn-bg);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
     color: #fff;
     border-radius: 12px;
     margin-bottom: 16px;
@@ -53,11 +70,12 @@
     font-weight: bold;
     padding: 13px 30px;
     border-radius: 10px;
-    border: none;
+    border: 1px solid rgba(255,255,255,0.25);
     background: var(--accent-red);
     color: white;
     cursor: pointer;
     width: 100%;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
   }
   button:disabled { opacity: 0.5; cursor: default; }
   #status { margin-top: 16px; font-size: 13px; color: var(--text-muted); min-height: 18px; }
