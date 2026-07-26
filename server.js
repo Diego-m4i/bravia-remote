@@ -190,6 +190,17 @@ wss.on('connection', (ws) => {
   });
 });
 
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`La porta ${PORT} e' gia' in uso. Chiudi eventuali altre istanze di PairBeam ancora aperte e riprova.`);
+    process.exit(1);
+  } else {
+    throw err;
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Relay in ascolto su http://localhost:${PORT}`);
 });
+
+module.exports = server;

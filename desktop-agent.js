@@ -94,7 +94,16 @@ const IRCC = {
   sen: 'AAAAAgAAABoAAAB9Aw=='
 };
 
-let tv = null; 
+let tv = null;
+let ws = null;
+
+// Chiude i socket aperti dall'agent (SSDP, WebSocket verso il relay) cosi'
+// il processo Electron puo' terminare del tutto alla chiusura dell'app,
+// senza restare come zombie a occupare porte/handle di rete.
+function shutdown() {
+  try { ssdpServer.stop(); } catch (err) { /* ignorato */ }
+  try { if (ws) ws.close(); } catch (err) { /* ignorato */ }
+}
 
 // Esegue i comandi sul terminale del PC
 function run(command) {
@@ -721,7 +730,7 @@ async function main() {
     process.exit(0);
   }
 
-  const ws = new WebSocket(RELAY_URL);
+  ws = new WebSocket(RELAY_URL);
 
   ws.on('open', () => {
     ws.send(JSON.stringify({ type: 'create' }));
@@ -764,3 +773,5 @@ async function main() {
 }
 
 main();
+
+module.exports = { shutdown };

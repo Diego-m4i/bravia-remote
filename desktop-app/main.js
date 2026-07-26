@@ -12,6 +12,32 @@ process.env.TV_CONFIG_DIR = app.getPath('userData');
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'tv-config.json');
 
+// Evita che due copie dell'app litighino per la porta 3000: se una e' gia'
+// in esecuzione, questa seconda istanza si chiude subito.
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+}
+
+let mainWindow = null;
+let serverInstance = null;
+let agentApi = null;
+let shuttingDown = false;
+
+// Chiude server HTTP/relay e agent (SSDP + WebSocket) e forza la
+// terminazione del processo: senza questo, eventuali handle di rete
+// ancora aperti possono impedire la chiusura reale del processo Electron,
+// che resta come zombie e tiene occupata la porta 3000 al riavvio.
+function shutdownAndExit() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
+  try { agentApi && agentApi.shutdown(); } catch (err) { console.error(err); }
+  try { serverInstance && serverInstance.close(); } catch (err) { console.error(err); }
+
+  app.exit(0);
+}
+
 // Interroga il relay finche' non compare un codice di pairing (l'agent lo
 // crea appena si connette), cosi' possiamo aprire il telecomando gia'
 // collegato invece di far digitare il codice a mano.
@@ -55,7 +81,7 @@ function waitForConfigFile(intervalMs = 500) {
 }
 
 async function createWindow() {
-  require('./build/server.js');
+  serverInstance = require('./build/server.js');
 
   const win = new BrowserWindow({
     width: 460,
@@ -67,6 +93,7 @@ async function createWindow() {
     backgroundColor: '#0f0f11',
     icon: path.join(__dirname, 'assets/icon.png'),
   });
+  mainWindow = win;
 
   // Da' un'icona vera alla finestra del popup (Tasto "Popup" nel telecomando),
   // che altrimenti erediterebbe l'icona generica di Electron.
@@ -92,7 +119,7 @@ async function createWindow() {
     await waitForConfigFile();
   }
 
-  require('./build/desktop-agent.js');
+  agentApi = require('./build/desktop-agent.js');
 
   const code = await waitForPairingCode();
   const url = code
@@ -101,8 +128,18 @@ async function createWindow() {
   win.loadURL(url);
 }
 
-app.whenReady().then(createWindow);
+if (gotSingleInstanceLock) {
+  app.on('second-instance', () => {
+    // Un secondo avvio e' stato bloccato dal lock: riporta in primo piano
+    // la finestra dell'istanza gia' in esecuzione invece di aprirne un'altra.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
 
-app.on('window-all-closed', () => {
-  app.quit();
-});
+  app.whenReady().then(createWindow);
+
+  app.on('window-all-closed', shutdownAndExit);
+  app.on('before-quit', shutdownAndExit);
+}
