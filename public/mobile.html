@@ -180,6 +180,29 @@
   .btn-pip:hover { background: rgba(255, 255, 255, 0.16); }
   .btn-pip svg { width: 14px; height: 14px; fill: currentColor; }
 
+  /* Tasto "torna a schermo intero", tondo, mostrato solo nel riquadro PiP */
+  .btn-restore-pip {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    color: var(--btn-text);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.05s;
+  }
+  .btn-restore-pip:hover { background: rgba(255, 255, 255, 0.16); }
+  .btn-restore-pip:active { transform: scale(0.92); }
+  .btn-restore-pip svg { width: 13px; height: 13px; fill: currentColor; }
+
   /* --- LAYOUT --- */
   #controls { 
     display: none; 
@@ -242,7 +265,41 @@
   .cols-2 { grid-template-columns: repeat(2, 1fr); }
   .cols-3 { grid-template-columns: repeat(3, 1fr); }
 
-  .btn-power { background-color: var(--accent-red) !important; color: white !important; border-color: rgba(255,255,255,0.25) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3) !important; }
+  /* Tasto Accensione/Spegnimento: tondo, solo icona, come sul telecomando */
+  .btn-power {
+    background-color: var(--accent-red) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.3) !important;
+    border-radius: 50% !important;
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: filter 0.15s, transform 0.05s;
+  }
+  .btn-power:hover { filter: brightness(1.1); }
+  .btn-power:active { transform: scale(0.92); }
+  .btn-power svg { width: 17px; height: 17px; fill: currentColor; }
+
+  /* Barra con solo il tasto power, mostrata al posto dell'header nel riquadro PiP */
+  .pip-top-bar { display: none; }
+  body.pip-active .pip-top-bar {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 6px;
+  }
+  body.pip-active .pip-top-bar .btn-power {
+    width: 24px;
+    height: 24px;
+  }
+  body.pip-active .pip-top-bar .btn-power svg { width: 13px; height: 13px; }
   .btn-netflix { background-color: var(--accent-netflix) !important; font-size: 11px !important; letter-spacing: 1px; border-color: rgba(255,255,255,0.25) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3) !important; }
   .btn-sen { background-color: #002f6c !important; font-size: 11px !important; border-color: rgba(255,255,255,0.25) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3) !important; }
 
@@ -414,9 +471,20 @@
   <div class="glow-orb red2"></div>
 
   <div class="remote-container">
+    <div class="pip-top-bar">
+      <button id="powerBtnPip" class="btn-power" onclick="sendCommand('tv_power')" title="Accendi / Spegni TV" data-cmd="tv_power">
+        <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C18.43 8.11 19 10 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2 .57-3.89 1.59-5.42L5.17 5.17C3.81 7.07 3 9.44 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.56-.81-4.93-2.17-6.83z"/></svg>
+      </button>
+      <button class="btn-restore-pip" title="Torna a schermo intero">
+        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      </button>
+    </div>
     <header>
       <h1>PairBeam</h1>
       <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="powerBtnFull" class="btn-power" onclick="sendCommand('tv_power')" style="display: none;" title="Accendi / Spegni TV" data-cmd="tv_power">
+          <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C18.43 8.11 19 10 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2 .57-3.89 1.59-5.42L5.17 5.17C3.81 7.07 3 9.44 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.56-.81-4.93-2.17-6.83z"/></svg>
+        </button>
         <button id="pipBtn" class="btn-pip" onclick="enterPiP()" style="display: none;" title="Apri in modalità Popup sempre in primo piano">
           <svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z"/></svg>
           Popup
@@ -439,15 +507,12 @@
             
             <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C18.43 8.11 19 10 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2 .57-3.89 1.59-5.42L5.17 5.17C3.81 7.07 3 9.44 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.56-.81-4.93-2.17-6.83z"/></svg>           
             Sistema & App</div>
-          <div class="row-grid cols-3">
+          <div class="row-grid cols-2">
             <button class="btn" data-cmd="tv_input" onclick="sendCommand('tv_input')" title="Sorgente">
               <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-10-7h9v6h-9z"/></svg>
               Input
             </button>
             <button class="btn" data-cmd="tv_sync_menu" onclick="sendCommand('tv_sync_menu')">Sync</button>
-            <button onclick="sendCommand('tv_power')" style="background: #e74c3c; color: white; font-weight: bold; border: 1px solid rgba(255,255,255,0.25); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);">Accendi / Spegni TV</button>
-            
-            </button>
           </div>
           
           <div class="row-grid cols-2">
@@ -537,6 +602,7 @@
     const pairingEl = document.getElementById('pairing');
     const controlsEl = document.getElementById('controls');
     const pipBtn = document.getElementById('pipBtn');
+    const powerBtnFull = document.getElementById('powerBtnFull');
 
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(proto + '//' + location.host);
@@ -550,7 +616,8 @@
       if (msg.type === 'joined') {
         pairingEl.style.display = 'none';
         controlsEl.style.display = 'block';
-        pipBtn.style.display = 'flex'; 
+        pipBtn.style.display = 'flex';
+        powerBtnFull.style.display = 'flex';
         statusEl.textContent = 'CONNESSO';
         statusEl.className = 'connected';
       }
@@ -566,7 +633,8 @@
         controlsEl.style.display = 'none';
         pairingEl.style.display = 'block';
         pipBtn.style.display = 'none';
-        
+        powerBtnFull.style.display = 'none';
+
         if (window.pipWindow) {
           window.pipWindow.close();
         }
@@ -723,13 +791,26 @@
         try {
           const pipWindow = await window.documentPictureInPicture.requestWindow({
             width: 250,
-            height: 215,
+            height: 240,
           });
 
           window.pipWindow = pipWindow;
           window.pipWindowDocument = pipWindow.document;
           pipWindow.document.body.classList.add('pip-active');
           pipWindow.sendCommand = sendCommand;
+
+          // Riaggancia l'handler ad ogni apertura: essendo lo stesso nodo
+          // riusato tra piu' popup nel tempo, un onclick inline con
+          // "window.close()" resterebbe legato al PRIMO popup creato e nei
+          // successivi non chiuderebbe piu' nulla. Con .onclick assegnato qui
+          // punta sempre alla finestra corrente.
+          const restoreBtnNative = container.querySelector('.btn-restore-pip');
+          if (restoreBtnNative) {
+            restoreBtnNative.onclick = () => {
+              try { window.focus(); } catch (e) {}
+              pipWindow.close();
+            };
+          }
 
           const styleSheets = Array.from(document.styleSheets);
           styleSheets.forEach((styleSheet) => {
@@ -777,7 +858,7 @@
 
     function fallbackPopup() {
       const width = 250;
-      const height = 215;
+      const height = 240;
       const left = (screen.width / 2) - (width / 2);
       const top = (screen.height / 2) - (height / 2);
 
@@ -842,6 +923,17 @@
       pipWindow.document.body.appendChild(container);
 
       pipWindow.sendCommand = sendCommand;
+
+      // Vedi commento nel ramo nativo: riaggancia l'handler ad ogni apertura,
+      // altrimenti dopo la prima volta "window.close()" resterebbe legato al
+      // popup precedente ormai chiuso e il pulsante smetterebbe di funzionare.
+      const restoreBtnFallback = container.querySelector('.btn-restore-pip');
+      if (restoreBtnFallback) {
+        restoreBtnFallback.onclick = () => {
+          try { window.focus(); } catch (e) {}
+          pipWindow.close();
+        };
+      }
 
       // Gestione input tastiera dentro il popup di Firefox
       pipWindow.document.addEventListener('keydown', handleKeyDown);

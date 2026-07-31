@@ -96,7 +96,10 @@ async function createWindow() {
   mainWindow = win;
 
   // Da' un'icona vera alla finestra del popup (Tasto "Popup" nel telecomando),
-  // che altrimenti erediterebbe l'icona generica di Electron.
+  // che altrimenti erediterebbe l'icona generica di Electron. La finestra resta
+  // sempre in primo piano (alwaysOnTop): a differenza di Chrome/Edge, che hanno
+  // l'API nativa Document Picture-in-Picture gia' floating di suo, un popup
+  // Electron e' una finestra normale e serve impostarlo esplicitamente.
   win.webContents.setWindowOpenHandler((details) => {
     if (details.frameName === 'PairBeamPopup') {
       return {
@@ -105,10 +108,22 @@ async function createWindow() {
           icon: path.join(__dirname, 'assets/icon.png'),
           backgroundColor: '#0f0f11',
           autoHideMenuBar: true,
+          alwaysOnTop: true,
         },
       };
     }
     return { action: 'allow' };
+  });
+
+  // overrideBrowserWindowOptions imposta alwaysOnTop alla creazione, ma su
+  // Windows va rinforzato dopo che la finestra e' pronta, altrimenti alcuni
+  // gestori finestre la fanno comunque passare in secondo piano al primo click
+  // altrove. 'screen-saver' e' il livello piu' alto disponibile.
+  app.on('browser-window-created', (_event, childWin) => {
+    if (childWin === win) return;
+    childWin.once('ready-to-show', () => {
+      childWin.setAlwaysOnTop(true, 'screen-saver');
+    });
   });
 
   if (!fs.existsSync(CONFIG_PATH)) {

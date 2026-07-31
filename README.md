@@ -16,23 +16,20 @@ Il sistema è composto da tre pezzi che comunicano tra loro:
 
 ## Download
 
-Vai alla sezione [Releases](../../releases) e scarica l'eseguibile per Windows che preferisci (non serve installare Node.js):
+Vai alla sezione [Releases](../../releases) e scarica **`PairBeam-Setup.exe`** (non serve installare Node.js): un installer tradizionale (procedura guidata, scelta cartella, collegamento nel menu Start, disinstallabile da Windows come qualsiasi altro programma). Una volta installata, apre direttamente la finestra del telecomando, gia' collegata — nessun browser, nessun codice da digitare.
 
-- **`PairBeam-Setup.exe`** — **app unica consigliata**: un installer tradizionale (procedura guidata, scelta cartella, collegamento nel menu Start, disinstallabile da Windows come qualsiasi altro programma). Una volta installata, apre direttamente la finestra del telecomando, gia' collegata — nessun browser, nessun codice da digitare.
-- **`PairBeam-Server.exe`** + **`PairBeam-Agent.exe`** — versione classica a due processi separati, utile se vuoi il relay su un PC e l'agent su un altro (es. telefono in un'altra stanza rispetto al PC/TV).
-
-> **Avviso di Windows ("Editore sconosciuto" / SmartScreen):** questi eseguibili non sono firmati con un certificato a pagamento, quindi Windows mostra un avviso al primo avvio. E' normale per software indipendente distribuito cosi': clicca **"Ulteriori informazioni" -> "Esegui comunque"**. Se vuoi verificare l'origine, il codice sorgente e la build sono qui in questo repository pubblico.
+> **Avviso di Windows ("Editore sconosciuto" / SmartScreen):** questo eseguibile non e' firmato con un certificato a pagamento, quindi Windows mostra un avviso al primo avvio. E' normale per software indipendente distribuito cosi': clicca **"Ulteriori informazioni" -> "Esegui comunque"**. Se vuoi verificare l'origine, il codice sorgente e la build sono qui in questo repository pubblico.
 
 ## Come usarlo
 
-### App unica (consigliata)
-
 Scarica ed esegui **`PairBeam-Setup.exe`**, segui la procedura guidata (si installa solo per il tuo utente, non serve essere amministratore). A installazione completata parte da sola e apre subito la finestra del telecomando; la trovi anche nel menu Start e sul desktop per le volte successive. Al primo avvio, se la TV non viene trovata automaticamente in rete, modifica `tv-config.json` nella cartella `%APPDATA%\pairbeam` con l'IP della TV (vedi `tv-config.example.json`) e riavvia.
 
-### Versione classica (due eseguibili)
+### Versione classica a due processi (solo da sorgente)
 
-1. Sul PC collegato alla TV, avvia **`PairBeam-Server.exe`**. Resta in ascolto su `http://localhost:3000`.
-2. Nella stessa cartella (o su un altro PC nella stessa rete), avvia **`PairBeam-Agent.exe`**. Al primo avvio scansiona la rete locale per trovare la TV Sony Bravia — se non la trova automaticamente, puoi inserire l'IP manualmente. Il risultato viene salvato in `tv-config.json` accanto all'eseguibile. Quando è pronto, la finestra di console mostra un **codice a 6 cifre**.
+Se preferisci il relay su un PC e l'agent su un altro (es. telefono in un'altra stanza rispetto al PC/TV), puoi ancora buildare ed eseguire i due processi separati da sorgente (vedi "Build da sorgente" piu' sotto) — non sono piu' distribuiti come eseguibili precompilati nelle Release.
+
+1. Sul PC collegato alla TV, avvia il relay (`npm start`, oppure l'eseguibile generato da `npm run build:server`). Resta in ascolto su `http://localhost:3000`.
+2. Nella stessa cartella (o su un altro PC nella stessa rete), avvia l'agent (`npm run agent`, oppure l'eseguibile generato da `npm run build:agent`). Al primo avvio scansiona la rete locale per trovare la TV Sony Bravia — se non la trova automaticamente, puoi inserire l'IP manualmente. Il risultato viene salvato in `tv-config.json` accanto all'eseguibile. Quando è pronto, la finestra di console mostra un **codice a 6 cifre**.
 3. Apri `http://localhost:3000/mobile.html` sul PC, oppure dal telefono (stessa rete WiFi) `http://<IP-DEL-PC>:3000/mobile.html`, inserisci il codice e collegati.
 4. Controlla la TV (e il PC, su Linux) dalla pagina.
 
