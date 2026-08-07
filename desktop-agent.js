@@ -514,6 +514,27 @@ async function getRemoteControllerInfo() {
 // Mappa inversa codice -> nome, solo per log leggibili
 const IRCC_NAMES = Object.fromEntries(Object.entries(IRCC).map(([name, code]) => [code, name]));
 
+// Interroga lo stato energetico della TV. Ritorna 'active'/'standby' oppure
+// null se la TV non risponde (spenta, in standby profondo o irraggiungibile).
+async function braviaGetPowerStatus(timeoutMs = 2500) {
+  if (!tv) return null;
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (tv.cookie) headers['Cookie'] = tv.cookie;
+    else if (tv.psk) headers['X-Auth-PSK'] = tv.psk;
+    const res = await fetch(`http://${tv.ip}/sony/system`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ method: 'getPowerStatus', id: 1, params: [], version: '1.0' }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const data = await res.json();
+    return (data.result && data.result[0] && data.result[0].status) || null;
+  } catch (err) {
+    return null;
+  }
+}
+
 async function braviaJsonCall(endpoint, method, params, version = '1.0') {
   if (!tv) return;
   const headers = { 'Content-Type': 'application/json' };
@@ -578,30 +599,10 @@ const ACTIONS = {
   // Gestione intelligente Toggle Power (Accensione/Spegnimento con rilevamento dello stato)
   tv_power: async () => {
     if (!tv) return;
-    
-    let isTvOn = false;
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (tv.cookie) headers['Cookie'] = tv.cookie;
-      else if (tv.psk) headers['X-Auth-PSK'] = tv.psk;
 
-      // Interroga lo stato energetico della TV (timeout piu' largo: appena
-      // uscita dalla standby la TV puo' rispondere con latenza).
-      const res = await fetch(`http://${tv.ip}/sony/system`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ method: 'getPowerStatus', id: 1, params: [], version: '1.0' }),
-        signal: AbortSignal.timeout(2500),
-      });
-      const data = await res.json();
-      const status = data.result && data.result[0] && data.result[0].status;
-      isTvOn = status === 'active';
-      console.log(`[Power Toggle] Stato rilevato: ${status || 'sconosciuto'} (${JSON.stringify(data)})`);
-    } catch (err) {
-      // Se va in timeout o restituisce un errore di rete, significa che la TV è spenta o in standby profondo
-      console.log(`[Power Toggle] Nessuna risposta dalla TV (${err.message}), presumo sia spenta.`);
-      isTvOn = false;
-    }
+    const status = await braviaGetPowerStatus(2500);
+    const isTvOn = status === 'active';
+    console.log(`[Power Toggle] Stato rilevato: ${status || 'sconosciuto (nessuna risposta dalla TV)'}`);
 
     if (isTvOn) {
       console.log("[Power Toggle] La TV è accesa. Invio spegnimento...");
@@ -621,6 +622,21 @@ const ACTIONS = {
       braviaJsonCall('system', 'setPowerStatus', [{ status: true }]);
       setTimeout(() => braviaJsonCall('system', 'setPowerStatus', [{ status: true }]), 1500);
       setTimeout(() => braviaJsonCall('system', 'setPowerStatus', [{ status: true }]), 3500);
+
+      // Verifica finale: se dopo tutti i tentativi la TV non risponde ancora,
+      // quasi sempre significa che la scheda di rete della TV si e' spenta del
+      // tutto (standby profondo/eco) e nessun pacchetto puo' piu' raggiungerla.
+      // Avvisiamo esplicitamente invece di fallire in silenzio.
+      setTimeout(async () => {
+        const finalStatus = await braviaGetPowerStatus(2000);
+        if (finalStatus !== 'active') {
+          const msg = 'La TV non risponde. Se era spenta da molte ore, controlla che sulla TV sia attivo "Standby di rete"/"Avvio rapido" (menu Rete): se disattivato, riaccendila una volta col telecomando fisico e riattivalo, altrimenti il Wake-on-LAN non puo\' funzionare.';
+          console.warn('[Power Toggle] ' + msg);
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'status', text: msg }));
+          }
+        }
+      }, 6000);
     }
   },
 

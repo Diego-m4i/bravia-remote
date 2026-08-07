@@ -156,6 +156,20 @@
     border: 1px solid var(--glass-border);
     box-shadow: inset 0 1px 0 var(--glass-highlight);
   }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px);
+    max-width: min(92vw, 420px); padding: 14px 18px; border-radius: 16px;
+    font-size: 14px; line-height: 1.4; color: #fff; text-align: center;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 var(--glass-highlight);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 1000;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .connected { color: var(--color-green); border-color: rgba(76, 217, 100, 0.3); }
   .disconnected { color: var(--color-red); border-color: rgba(255, 59, 48, 0.3); }
 
@@ -597,12 +611,23 @@
     </div>
   </div>
 
+  <div id="toast"></div>
+
   <script>
     const statusEl = document.getElementById('status');
     const pairingEl = document.getElementById('pairing');
     const controlsEl = document.getElementById('controls');
     const pipBtn = document.getElementById('pipBtn');
     const powerBtnFull = document.getElementById('powerBtnFull');
+    const toastEl = document.getElementById('toast');
+
+    let toastTimer = null;
+    function showToast(text) {
+      toastEl.textContent = text;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 8000);
+    }
 
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(proto + '//' + location.host);
@@ -625,6 +650,10 @@
       if (msg.type === 'error') {
         statusEl.textContent = msg.message;
         statusEl.className = 'disconnected';
+      }
+
+      if (msg.type === 'status') {
+        showToast(msg.text);
       }
 
       if (msg.type === 'peer_disconnected') {
@@ -775,6 +804,17 @@
     }
 
     /* --- GENERAZIONE DEL POPUP (INTEGRATO CON GNOME/FIREFOX) --- */
+
+    // Clona gli orb dello sfondo dinamico dentro il documento del PiP: nella
+    // finestra principale vivono come fratelli di .remote-container, ma solo
+    // quest'ultimo viene spostato nel popup, quindi senza questa copia il PiP
+    // resterebbe con sfondo piatto invece dello stesso sfondo animato.
+    function cloneGlowOrbs(targetDoc) {
+      document.querySelectorAll('.glow-orb').forEach((orb) => {
+        targetDoc.body.appendChild(orb.cloneNode(true));
+      });
+    }
+
     async function enterPiP() {
       if (window.pipWindow) return;
 
@@ -798,6 +838,7 @@
           window.pipWindowDocument = pipWindow.document;
           pipWindow.document.body.classList.add('pip-active');
           pipWindow.sendCommand = sendCommand;
+          cloneGlowOrbs(pipWindow.document);
 
           // Riaggancia l'handler ad ogni apertura: essendo lo stesso nodo
           // riusato tra piu' popup nel tempo, un onclick inline con
@@ -807,8 +848,12 @@
           const restoreBtnNative = container.querySelector('.btn-restore-pip');
           if (restoreBtnNative) {
             restoreBtnNative.onclick = () => {
-              try { window.focus(); } catch (e) {}
+              // Chiude prima il PiP (che resta sempre in primo piano) e solo
+              // dopo porta a fuoco la finestra a schermo intero: chiamare
+              // focus() mentre il PiP e' ancora aperto non basta a farla
+              // salire sopra una finestra always-on-top.
               pipWindow.close();
+              setTimeout(() => { try { window.focus(); } catch (e) {} }, 50);
             };
           }
 
@@ -859,8 +904,12 @@
     function fallbackPopup() {
       const width = 250;
       const height = 240;
-      const left = (screen.width / 2) - (width / 2);
-      const top = (screen.height / 2) - (height / 2);
+      const margin = 20;
+      // Angolo in alto a destra dello schermo (non del centro): usa
+      // availLeft/availTop/availWidth cosi' su multi-monitor finisce nello
+      // schermo giusto e non finisce sotto la taskbar di Windows.
+      const left = (screen.availLeft || 0) + screen.availWidth - width - margin;
+      const top = (screen.availTop || 0) + margin;
 
       // Crea un popup vuoto (about:blank)
       const pipWindow = window.open(
@@ -921,6 +970,7 @@
 
       container.parentNode.replaceChild(placeholder, container);
       pipWindow.document.body.appendChild(container);
+      cloneGlowOrbs(pipWindow.document);
 
       pipWindow.sendCommand = sendCommand;
 
@@ -930,8 +980,10 @@
       const restoreBtnFallback = container.querySelector('.btn-restore-pip');
       if (restoreBtnFallback) {
         restoreBtnFallback.onclick = () => {
-          try { window.focus(); } catch (e) {}
+          // Vedi commento nel ramo nativo: chiude prima il PiP always-on-top,
+          // poi porta a fuoco la finestra a schermo intero.
           pipWindow.close();
+          setTimeout(() => { try { window.focus(); } catch (e) {} }, 50);
         };
       }
 
