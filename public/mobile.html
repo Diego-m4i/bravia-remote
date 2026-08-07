@@ -306,8 +306,8 @@
     display: flex !important;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    padding-bottom: 6px;
+    gap: 8px;
+    padding-bottom: 4px;
   }
   body.pip-active .pip-top-bar .btn-power {
     width: 24px;
@@ -398,7 +398,7 @@
      ========================================================================== */
   body.pip-active {
     background: var(--remote-bg) !important;
-    padding: 8px !important;
+    padding: 6px !important;
     overflow: hidden !important;
     min-height: auto !important;
     display: block !important;
@@ -420,7 +420,7 @@
     display: flex !important;
     flex-direction: row !important;
     align-items: stretch !important;
-    gap: 6px !important;
+    gap: 5px !important;
   }
   body.pip-active .dashboard-grid > .control-card:nth-child(1),
   body.pip-active .dashboard-grid > .control-card:nth-child(2) {
@@ -436,22 +436,22 @@
   }
 
   body.pip-active .control-card {
-    padding: 8px !important;
-    border-radius: 16px !important;
+    padding: 6px !important;
+    border-radius: 14px !important;
   }
   body.pip-active .card-title {
     display: none !important;
   }
   body.pip-active button.btn {
-    padding: 6px 4px !important;
+    padding: 5px 3px !important;
     font-size: 11px !important;
     border-radius: 8px !important;
-    gap: 4px !important;
+    gap: 3px !important;
   }
   body.pip-active .dpad-container {
-    max-width: 108px !important;
+    max-width: 100px !important;
     margin: 0 auto !important;
-    grid-gap: 5px !important;
+    grid-gap: 4px !important;
   }
   body.pip-active .dpad-btn {
     font-size: 11px !important;
@@ -460,16 +460,16 @@
     font-size: 11px !important;
   }
   body.pip-active .rocker-container {
-    grid-gap: 6px !important;
+    grid-gap: 5px !important;
     height: 100% !important;
   }
   body.pip-active .rocker-col {
-    padding: 4px !important;
-    border-radius: 14px !important;
+    padding: 3px !important;
+    border-radius: 12px !important;
   }
   body.pip-active .rocker-col button {
-    padding: 8px 0 !important;
-    font-size: 16px !important;
+    padding: 7px 0 !important;
+    font-size: 15px !important;
     border-radius: 10px !important;
   }
   body.pip-active .rocker-label {
@@ -830,8 +830,8 @@
       if (!isElectron && 'documentPictureInPicture' in window) {
         try {
           const pipWindow = await window.documentPictureInPicture.requestWindow({
-            width: 250,
-            height: 240,
+            width: 226,
+            height: 210,
           });
 
           window.pipWindow = pipWindow;
@@ -902,12 +902,15 @@
     }
 
     function fallbackPopup() {
-      const width = 250;
-      const height = 240;
-      const margin = 20;
+      const width = 226;
+      const height = 210;
+      const margin = 10;
       // Angolo in alto a destra dello schermo (non del centro): usa
       // availLeft/availTop/availWidth cosi' su multi-monitor finisce nello
-      // schermo giusto e non finisce sotto la taskbar di Windows.
+      // schermo giusto e non finisce sotto la taskbar di Windows. Nell'app
+      // desktop la finestra del PiP e' senza cornice (vedi main.js), quindi
+      // width/height corrispondono esattamente al riquadro visibile e
+      // l'allineamento nello spigolo risulta preciso.
       const left = (screen.availLeft || 0) + screen.availWidth - width - margin;
       const top = (screen.availTop || 0) + margin;
 
@@ -915,7 +918,7 @@
       const pipWindow = window.open(
         '',
         'PairBeamPopup',
-        `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+        `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=no`
       );
 
       if (!pipWindow) {

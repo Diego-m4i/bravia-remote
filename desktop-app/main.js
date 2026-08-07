@@ -109,6 +109,12 @@ async function createWindow() {
           backgroundColor: '#0f0f11',
           autoHideMenuBar: true,
           alwaysOnTop: true,
+          // Senza cornice nativa: la larghezza/altezza richieste dalla pagina
+          // diventano l'intero riquadro visibile, cosi' l'allineamento nello
+          // spigolo in alto a destra torna esatto (niente title bar/bordi OS
+          // che sfalsano la posizione) e non c'e' spazio sprecato in chrome.
+          frame: false,
+          resizable: false,
         },
       };
     }
@@ -123,6 +129,26 @@ async function createWindow() {
     if (childWin === win) return;
     childWin.once('ready-to-show', () => {
       childWin.setAlwaysOnTop(true, 'screen-saver');
+    });
+
+    // Il PiP resta sempre sopra la finestra principale finche' e' aperto: una
+    // volta chiuso (bottone "torna a schermo intero" o chiusura diretta),
+    // niente lo sostituisce in primo piano da solo. Un semplice win.focus()
+    // non basta: Windows nega SetForegroundWindow ai processi che non hanno
+    // ricevuto l'ultimo input reale, quindi la finestra risulterebbe "in
+    // focus" per Electron ma non davvero sopra le altre a video. Il trucco
+    // usato dalle app Electron per questo caso e' forzare temporaneamente
+    // alwaysOnTop: quello passa dallo z-order (SetWindowPos), che Windows
+    // NON blocca allo stesso modo, poi lo si toglie subito dopo per non
+    // lasciare la finestra bloccata sopra tutte le altre in futuro.
+    childWin.on('closed', () => {
+      if (win && !win.isDestroyed()) {
+        if (win.isMinimized()) win.restore();
+        win.show();
+        win.setAlwaysOnTop(true);
+        win.focus();
+        win.setAlwaysOnTop(false);
+      }
     });
   });
 
